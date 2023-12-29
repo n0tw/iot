@@ -19,6 +19,82 @@ paths:
           description: Successful response
         '404':
           description: Entity not found
+  /get_entities_by_time:
+    get:
+      summary: Get entities by ID and time period
+      operationId: getEntitiesByTimeRoute
+      x-swagger-router-controller: app  # Module name
+      parameters:
+        - name: id
+          in: query
+          description: ID of the entity to be retrieved
+          required: true
+          type: string
+        - name: Year from
+          in: query
+          description: Start year of entity searching
+          required: true
+          type: integer
+        - name: Month from
+          in: query
+          description: Start month of entity searching
+          required: true
+          type: integer
+        - name: Day from
+          in: query
+          description: Start day of entity searching
+          required: true
+          type: integer
+        - name: Hour from
+          in: query
+          description: Start hour of entity searching
+          required: true
+          type: integer
+        - name: Minute from
+          in: query
+          description: Start minute of entity searching
+          required: true
+          type: integer
+        - name: Second from
+          in: query
+          description: Start second of entity searching
+          required: true
+          type: integer
+        - name: Year to
+          in: query
+          description: End year of entity searching
+          required: true
+          type: integer
+        - name: Month to
+          in: query
+          description: End month of entity searching
+          required: true
+          type: integer
+        - name: Day to
+          in: query
+          description: End day of entity searching
+          required: true
+          type: integer
+        - name: Hour to
+          in: query
+          description: End hour of entity searching
+          required: true
+          type: integer
+        - name: Minute to
+          in: query
+          description: End minute of entity searching
+          required: true
+          type: integer
+        - name: Second to
+          in: query
+          description: End second of entity searching
+          required: true
+          type: integer
+      responses:
+        '200':
+          description: Successful response
+        '404':
+          description: Entity not found
   /post_entity:
     post:
       summary: Post an entity
@@ -231,13 +307,10 @@ definitions:
       - $ref: '#/definitions/Entity'
       - type: object
         properties:
+          category:
+            type: string
           source:
-            type: object
-            properties:
-              type:
-                type: string
-              value:
-                type: string
+            type: string
           linkedEntity:
             type: object
             properties:
@@ -246,49 +319,17 @@ definitions:
               value:
                 type: string
           fleetVehicleId:
-            type: object
-            properties:
-              type:
-                type: string
-              value:
-                type: string
-          servicestatus:
-            type: object
-            properties:
-              type:
-                type: string
-              value:
-                type: string
-          brandname:
-            type: object
-            properties:
-              type:
-                type: string
-              value:
-                type: string
-          modelname:
-            type: object
-            properties:
-              type:
-                type: string
-              value:
-                type: string
-          licenseplate:
-            type: object
-            properties:
-              type:
-                type: string
-              value:
-                type: string
+            type: string
+          serviceStatus:
+            type: string
+          name:
+            type: string
+          license_plate:
+            type: string
           location:
             $ref: '#/definitions/Location'
-          fuellevel:
-            type: object
-            properties:
-              type:
-                type: string
-              value:
-                type: number
+          fuelFilled:
+            type: string
 
   Location:
     type: object
