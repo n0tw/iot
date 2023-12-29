@@ -9,7 +9,7 @@ const createEntities = async (latitude, longitude) => {
     id: 'bus123',
     type: 'Bus',
     location: {
-      type: 'geo:point',
+      type: 'geo:point', 
       value: `${latitude},${longitude}`
     }
   };
