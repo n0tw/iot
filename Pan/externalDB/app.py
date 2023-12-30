@@ -1,193 +1,274 @@
-import datetime as dt
-import json
-import connexion
-from flask_cors import CORS
-from flask import jsonify, request
-from flask_pymongo import PyMongo
-from bson import json_util
-
-app = connexion.App(__name__, specification_dir='./')
-app.add_api('swagger.yml', resolver=connexion.RestyResolver('api'))
+from datetime import timedelta, timezone
+from pymongo import MongoClient
+import methods
 
 # MongoDB configuration
-app.app.config['MONGO_URI'] = 'mongodb://localhost:27017/your_database_name'
-mongo = PyMongo(app.app)
+client = MongoClient("mongodb://localhost:27017/") 
 
-# GET route to retrieve entities by ID
-@app.route('/get_entity', methods=['GET'])
-def getEntityRoute():
-    entityId = request.args.get('id')
+# Select the database
+db = client["externalDB"]
 
-    # Get the MongoDB collection
-    collection = mongo.db['your_collection']
-    data = []
-    try:
-        # Find the entity by custom_id
-        for existing_entity in collection.find({'id': entityId}):
-            existing_entity.pop('_id',None)
-            data.append(existing_entity)
-
-        if len(list(collection.find({'id': entityId}))) == 0:
-            return jsonify({'message': f'Entity with ID {entityId} not found'}), 404
-
-        return jsonify({'message': f'Entity with ID {entityId} received', 'data': data})
-    
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        return jsonify({'message': 'Error occurred during get'}), 500
-    
-
-@app.route('/get_entities_by_time', methods=['GET'])
-def getEntitiesByTimeRoute():
-    entityId = request.args.get('id')
-    initYear = int(request.args.get('Year from'))
-    initMonth = int(request.args.get('Month from'))
-    initDay = int(request.args.get('Day from'))
-    initHour = int(request.args.get('Hour from'))
-    initMinute = int(request.args.get('Minute from'))
-    initSecond = int(request.args.get('Second from'))
-
-    endYear = int(request.args.get('Year to'))
-    endMonth = int(request.args.get('Month to'))
-    endDay = int(request.args.get('Day to'))
-    endHour = int(request.args.get('Hour to'))
-    endMinute = int(request.args.get('Minute to'))
-    endSecond = int(request.args.get('Second to'))
-
-    # Get the MongoDB collection
-    collection = mongo.db['your_collection']
-    data = []
-    try:
-        # Find the entity by custom_id, date and time
-        for existing_entity in collection.find({
-                                                "dateObserved":
-                                                    {
-                                                    "type": "datetime",
-                                                    "value": 
-                                                    {
-                                                        "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                            initHour, initMinute, initSecond),
-                                                        "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                            endHour, endMinute, endSecond)
-                                                    }
-                                                    },
-                                                "id": entityId
-                                                }):
-            existing_entity.pop('_id',None)
-            data.append(existing_entity)
-        print(list(collection.find({
-                                    "dateObserved": 
-                                        {
-                                        "type": "datetime",
-                                        "value": 
-                                            {
-                                            "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                initHour, initMinute, initSecond),
-                                            "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                endHour, endMinute, endSecond)
-                                            }
-                                        },
-                                    "id": entityId
-                                    }
-                                    )))
-        if len(list(collection.find({
-                                    "dateObserved": 
-                                        {
-                                        "type": "datetime",
-                                        "value": 
-                                            {
-                                            "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                initHour, initMinute, initSecond),
-                                            "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                endHour, endMinute, endSecond)
-                                            }
-                                        },
-                                    "id": entityId
-                                    }
-                                    ))) == 0:
-            print(dt.datetime(initYear,initMonth,initDay,initHour,initMinute,initSecond))
-            print(dt.datetime(endYear,endMonth,endDay,endHour,endMinute,endSecond))
-            return jsonify({'message': f'Entity with ID {entityId} not found'}), 404
-
-        return jsonify({'message': f'Entity with ID {entityId} received', 'data': data})
-    
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        return jsonify({'message': 'Error occurred during get'}), 500
-
-
-@app.route('/post_entity', methods=['POST'])
-def postEntityRoute():
-    data = request.json
-
-    # Example: Insert data into MongoDB using Flask-PyMongo
-    mongo.db.your_collection.insert_one(data)
-
-    return jsonify({'message': 'Entity posted successfully'})
-
-@app.route('/update_entity', methods=['PATCH'])
-def patchEntityRoute():
-    entityId = str(request.args.get('entityId'))
-
-    # Get the MongoDB collection
-    collection = mongo.db['your_collection']
-
-    try:
-        # Find the entity by custom_id
-        existing_entity = collection.find_one({'id': entityId})
-
-        if not existing_entity:
-            return jsonify({'message': f'Entity with ID {entityId} not found'}), 404
-
-        entityObjectId = existing_entity['_id']
-
-        # Update the entity with the provided data
-        update_data = request.json
-        for key, value in update_data.items():
-            if key in existing_entity:
-                existing_entity[key] = value
-        
-        existing_entity.pop('_id',None)
-        
-        json_document = json.loads(json_util.dumps(existing_entity))
-
-        # Update the entity in the MongoDB collection
-        collection.update_one({'_id': entityObjectId}, {'$set': json_document})
-
-        return jsonify({'message': f'Entity with ID {entityId} partially updated', 'data': existing_entity})
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        return jsonify({'message': 'Error occurred during update'}), 500
-
-
-# DELETE route to remove entities by ID
-@app.route('/delete_entity', methods=['DELETE'])
-def deleteEntityRoute():
-    entityId = request.args.get('id')
-
-    # Get the MongoDB collection
-    collection = mongo.db['your_collection']
-
-    try:
-        # Find the entity by custom_id
-        existing_entity = collection.find_one({'id': entityId})
-
-        if not existing_entity:
-            return jsonify({'message': f'Entity with ID {entityId} not found'}), 404
-        
-        entityObjectId = existing_entity['_id']
-
-        collection.delete_one({'_id': entityObjectId})
-
-        existing_entity.pop('_id',None)
-
-        return jsonify({'message': f'Entity with ID {entityId} deleted', 'data': existing_entity})
-
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        return jsonify({'message': 'Error occurred during delete'}), 500
-
-CORS(app.app)
+# Select the collection within the database
+collection = db['collection_of_historical_data']
 
 if __name__ == '__main__':
-    app.run(port=5000)
+    #   Input data
+    #   crowdFlowObserverd inputs
+    cFOid = "urn:ngsi-ld:CrowdFlowObserved:Valladolid_1"
+    cFObool = False
+    cFOdatetime = "2018-08-07T11:10:00/2018-08-07T11:15:00"
+    cFOpc = 105
+    cFOloctype = "LineString"
+    cFOcords = [
+                    [
+                        -4.73735395519672,
+                        41.6538181849672
+                    ],
+                    [
+                        -4.73414858659993,
+                        41.6600594193478
+                    ],
+                    [
+                        -4.73447575302641,
+                        41.659585195093
+                    ]
+                ]
+    #   trafficViolation inputs
+    tVid = "ngsi-ld:Trafficviolation:234R:0212"
+    tVdatetime = "2021-03-11T15:51:02+05:30"
+    tVplate = "CAR_PLATE"
+    tVstation = "trasnport station entity url?"
+    tVloctype = "LineString"
+    tVcords = [
+                    [
+                        -4.73735395519672,
+                        41.6538181849672
+                    ],
+                    [
+                        -4.73414858659993,
+                        41.6600594193478
+                    ],
+                    [
+                        -4.73447575302641,
+                        41.659585195093
+                    ]
+                ]
+    
+    #   transportStation inputs
+    tSid = "urn:ngsi-ld:Station:Station:MNCA-STram-L02-AP-T2"
+    tSdatetimeRep = "2020-03-17T08:45:00Z"
+    tSvid = "VEHICLE ENTITY ID"
+    tSdatetimeObs = "2020-03-17T08:45:00Z"
+    tScFOid = "CROWD FLOW OBSERVED ENTITY ID"
+    tSdescr = "Description of bus station"
+    tSloctype = "Point"
+    tScords = [
+                43.66481,
+                7.196545
+            ]
+    tSwheelchair = 1
+    tSzoneid = "B"
+    
+    # vehicle inputs
+    vid = "urn:ngsi-ld:Vehicle:vehicle:WasteManagement:1"
+    vsim = "9942142573"
+    vffilled = 6
+    vftype = "gas"
+    vplate = "KA052134"
+    vloctype = "Point"
+    vcords = [
+                -3.164485591715449,
+                40.62785133667262
+            ]
+    vdatetimeloc = "2018-09-27T12:00:00Z"
+    vname = "C Recogida 1"
+    vdatetimeObs = "2021-03-11T15:51:02+05:30"
+    vcFOid = "CROWD FLOW OBSERVED ENTITY ID"
+    vsrvcOnDuty = False
+    vsrvcStatus = "onRoute"
+    
+
+    #   Payloads
+    crowdFlowObservedData = {
+        "id": cFOid,
+        "type": "CrowdFlowObserved",
+        "congested": {
+            "type": "Property",
+            "value": cFObool
+        },
+        "dateObserved": {
+            "type": "Property",
+            "value": {
+                "@type": "DateTime",
+                "@value": cFOdatetime
+            }
+        },
+        "location": {
+            "type": "GeoProperty",
+            "value": {
+                "type": cFOloctype,
+                "coordinates": cFOcords
+            }
+        },
+        "peopleCount": {
+            "type": "Property",
+            "value": cFOpc
+        }
+    }
+
+    trafficViolationData = {
+        "id": tVid,
+        "type": "TrafficViolation",
+        "observationDateTime": {
+            "type": "Property",
+            "value": {
+                "@type": "DateTime",
+                "@value": tVdatetime
+            }
+        },
+        "description": {
+            "type": "Property",
+            "value": "Illegal Parking"
+        },
+        "vehiclePlate": {
+            "type": "Property",
+            "value":  tVplate
+        },
+        "transportStation": {
+            "type": "transportStation",
+            "value": tVstation
+        },
+        "location": {
+            "type": "GeoProperty",
+            "value": {
+                "type": tVloctype,
+                "coordinates": tVcords
+            }
+        }
+    }
+
+    transportStationData= {
+        "id": tSid,
+        "type": "TransportStation",
+        "contractingAuthority": {
+            "type": "Property",
+            "value": "Municipality of Patras"
+        },
+        "contractingCompany": {
+            "type": "Property",
+            "value": "Urban Transports of Patras S.A."
+        },
+        "dateLastReported": {
+            "type": "DateTime",
+            "value": tSdatetimeRep
+        },
+        "vehicleLastReported": {
+            "type": "Vehicle",
+            "value": tSvid
+        },
+        "dateObserved": {
+            "type": "DateTime",
+            "value": tSdatetimeObs
+        },
+        "crowdFlowObserved": {
+            "type": "CrowdFlowObserved",
+            "value": tScFOid
+        },
+        "description": {
+            "type": "Property",
+            "value": tSdescr
+        },
+        "location": {
+            "type": "GeoProperty",
+            "value": {
+                "type": tSloctype,
+                "coordinates": tScords
+            }
+        },
+        "stationType": {
+            "type": "Property",
+            "value": [
+                "bus"
+            ]
+        },
+        "wheelChairAccessible": {
+            "type": "Property",
+            "value": tSwheelchair
+        },
+        "zoneId": {
+            "type": "Property",
+            "value": tSzoneid
+        }
+    }
+
+    vehicleData = {
+        "id": vid,
+        "type": "Vehicle",
+        "category": {
+            "type": "Property",
+            "value": [
+                "municipalServices"
+            ]
+        },
+        "deviceSimNumber": {
+            "type": "Property",
+            "value": vsim
+        },
+        "fuelFilled": {
+            "type": "Property",
+            "value": vffilled
+        },
+        "fuelType": {
+            "type": "Property",
+            "value": vftype
+        },
+        "license_plate": {
+            "type": "Property",
+            "value": vplate
+        },
+        "location": {
+            "type": "GeoProperty",
+            "value": {
+                "type": vloctype,
+                "coordinates": vcords
+            },
+            "observedAt": vdatetimeloc
+        },
+        "name": {
+            "type": "Property",
+            "value": vname
+        },
+        "observationDateTime": {
+            "type": "Property",
+            "value": {
+                "@type": "DateTime",
+                "@value": vdatetimeObs
+            }
+        },
+        "crowdFlowObserved": {
+            "type": "CrowdFlowObserved",
+            "value": vcFOid
+        },
+        "serviceOnDuty": {
+            "type": "Property",
+            "value": vsrvcOnDuty,
+        },
+        "serviceStatus": {
+            "type": "Property",
+            "value": vsrvcStatus
+        },
+        "vehicleTrackerDevice": {
+            "type": "Property",
+            "value": "Installed"
+        },
+        "vehicleType": {
+            "type": "Property",
+            "value": "bus"
+        },
+    }
+
+    offset_minutes = 60
+    # Creating a timezone object
+    tz = timezone(timedelta(minutes=offset_minutes))
+    
+    methods.getEntitiesByTimeRoute(tSid,"TransportStation",2020,3,11,15,31,2,2023,4,5,1,5,2,tz,collection)
