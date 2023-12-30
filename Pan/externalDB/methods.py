@@ -35,9 +35,9 @@ def getEntitiesByTimeRoute(entityId, entityType, initYear, initMonth, initDay, i
                                                         "@type": "DateTime",
                                                         "@value": {
                                                             "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                                initHour, initMinute, initSecond,0,tz),
+                                                                                initHour, initMinute, initSecond,0,tzinfo=tz),
                                                             "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                                endHour, endMinute, endSecond,0,tz)
+                                                                                endHour, endMinute, endSecond,0,tzinfo=tz)
                                                         }
                                                     }
                                                 },
@@ -52,9 +52,9 @@ def getEntitiesByTimeRoute(entityId, entityType, initYear, initMonth, initDay, i
                                             "@type": "DateTime",
                                             "@value": {
                                                 "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                    initHour, initMinute, initSecond,0,tz),
+                                                                    initHour, initMinute, initSecond,0,tzinfo=tz),
                                                 "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                    endHour, endMinute, endSecond,0,tz)
+                                                                    endHour, endMinute, endSecond,0,tzinfo=tz)
                                             }
                                         }
                                     },
@@ -72,9 +72,9 @@ def getEntitiesByTimeRoute(entityId, entityType, initYear, initMonth, initDay, i
                                                         "@type": "DateTime",
                                                         "@value": {
                                                             "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                                initHour, initMinute, initSecond,0,tz),
+                                                                                initHour, initMinute, initSecond,0,tzinfo=tz),
                                                             "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                                endHour, endMinute, endSecond,0,tz)
+                                                                                endHour, endMinute, endSecond,0,tzinfo=tz)
                                                         }
                                                     }
                                                 },
@@ -89,9 +89,9 @@ def getEntitiesByTimeRoute(entityId, entityType, initYear, initMonth, initDay, i
                                             "@type": "DateTime",
                                             "@value": {
                                                 "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                    initHour, initMinute, initSecond,0,tz),
+                                                                    initHour, initMinute, initSecond,0,tzinfo=tz),
                                                 "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                    endHour, endMinute, endSecond,0,tz)
+                                                                    endHour, endMinute, endSecond,0,tzinfo=tz)
                                             }
                                         }
                                     },
@@ -108,9 +108,9 @@ def getEntitiesByTimeRoute(entityId, entityType, initYear, initMonth, initDay, i
                                                     "type": "DateTime",
                                                     "value": {
                                                         "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                            initHour, initMinute, initSecond,0,tz),
+                                                                            initHour, initMinute, initSecond,0,tzinfo=tz),
                                                         "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                            endHour, endMinute, endSecond,0,tz)
+                                                                            endHour, endMinute, endSecond,0,tzinfo=tz)
                                                     }
                                                 },
                                                 "id": entityId
@@ -123,9 +123,9 @@ def getEntitiesByTimeRoute(entityId, entityType, initYear, initMonth, initDay, i
                                                     "type": "DateTime",
                                                     "value": {
                                                         "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                            initHour, initMinute, initSecond,0,tz),
+                                                                            initHour, initMinute, initSecond,0,tzinfo=tz),
                                                         "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                            endHour, endMinute, endSecond,0,tz)
+                                                                            endHour, endMinute, endSecond,0,tzinfo=tz)
                                                     }
                                                 },
                                                 "id": entityId
@@ -137,9 +137,9 @@ def getEntitiesByTimeRoute(entityId, entityType, initYear, initMonth, initDay, i
                                         "type": "DateTime",
                                         "value": {
                                             "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                initHour, initMinute, initSecond,0,tz),
+                                                                initHour, initMinute, initSecond,0,tzinfo=tz),
                                             "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                endHour, endMinute, endSecond,0,tz)
+                                                                endHour, endMinute, endSecond,0,tzinfo=tz)
                                         }
                                     },
                                     "id": entityId
@@ -149,9 +149,9 @@ def getEntitiesByTimeRoute(entityId, entityType, initYear, initMonth, initDay, i
                                         "type": "DateTime",
                                         "value": {
                                             "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                initHour, initMinute, initSecond,0,tz),
+                                                                initHour, initMinute, initSecond,0,tzinfo=tz),
                                             "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                endHour, endMinute, endSecond,0,tz)
+                                                                endHour, endMinute, endSecond,0,tzinfo=tz)
                                         }
                                     },
                                     "id": entityId
@@ -168,9 +168,9 @@ def getEntitiesByTimeRoute(entityId, entityType, initYear, initMonth, initDay, i
                                                         "@type": "DateTime",
                                                         "@value": {
                                                             "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                                initHour, initMinute, initSecond,0,tz),
+                                                                                initHour, initMinute, initSecond,0,tzinfo=tz),
                                                             "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                                endHour, endMinute, endSecond,0,tz)
+                                                                                endHour, endMinute, endSecond,0,tzinfo=tz)
                                                         }
                                                     }
                                                 },
@@ -185,9 +185,9 @@ def getEntitiesByTimeRoute(entityId, entityType, initYear, initMonth, initDay, i
                                             "@type": "DateTime",
                                             "@value": {
                                                 "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                    initHour, initMinute, initSecond,0,tz),
+                                                                    initHour, initMinute, initSecond,0,tzinfo=tz),
                                                 "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                    endHour, endMinute, endSecond,0,tz)
+                                                                    endHour, endMinute, endSecond,0,tzinfo=tz)
                                             }
                                         }
                                     },
@@ -219,19 +219,20 @@ def patchEntityRoute(entityId, updateData, collection):
         if not existing_entity:
             return print({'message': f'Entity with ID {entityId} not found'}, 404)
         
-        entityObjectId = existing_entity['_id']
+        entityType = existing_entity['type']
 
         # Update the entity with the provided data
         for key, value in updateData.items():
             if key in existing_entity:
                 existing_entity[key] = value
 
-        existing_entity.pop('_id',tz)
+        existing_entity.pop('id',None)
+        existing_entity.pop('type',None)
 
         json_document = json.loads(json_util.dumps(existing_entity))
 
         # Update the entity in the MongoDB collection
-        collection.update_one({'_id': entityObjectId}, {'$set': json_document})
+        collection.update_one({'id': entityId, 'type': entityType}, {'$set': json_document})
         return print({'message': f'Entity with ID {entityId} partially updated', 'data': existing_entity})
     
     except Exception as e:
@@ -251,7 +252,6 @@ def deleteEntityRoute(entityId, collection):
         
         entityObjectId = existing_entity['_id']
         collection.delete_one({'_id': entityObjectId})
-        existing_entity.pop('_id',tz)
 
         return print({'message': f'Entity with ID {entityId} deleted', 'data': existing_entity})
 
