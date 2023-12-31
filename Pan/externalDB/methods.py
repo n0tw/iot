@@ -29,34 +29,22 @@ def getEntitiesByTimeRoute(entityId, entityType, initYear, initMonth, initDay, i
         # Bulk request for entity CrowdFlowObserved
         if entityType == "CrowdFlowObserved":
             for existing_entity in collection.find({
-                                                "dateObserved": {
-                                                    "type": "Property",
-                                                    "value": {
-                                                        "@type": "DateTime",
-                                                        "@value": {
-                                                            "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                                initHour, initMinute, initSecond,0,tzinfo=tz),
-                                                            "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                                endHour, endMinute, endSecond,0,tzinfo=tz)
-                                                        }
-                                                    }
+                                                "dateObserved.@value": {
+                                                    "$gte": dt.datetime(initYear, initMonth, initDay, 
+                                                                        initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+                                                    "$lt": dt.datetime(endYear, endMonth, endDay, 
+                                                                        endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
                                                 },
                                                 "id": entityId
                                                 }):
                 data.append(existing_entity)
 
             if len(list(collection.find({
-                                    "dateObserved": {
-                                        "type": "Property",
-                                        "value": {
-                                            "@type": "DateTime",
-                                            "@value": {
-                                                "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                    initHour, initMinute, initSecond,0,tzinfo=tz),
-                                                "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                    endHour, endMinute, endSecond,0,tzinfo=tz)
-                                            }
-                                        }
+                                    "dateObserved.@value": {
+                                        "$gte": dt.datetime(initYear, initMonth, initDay, 
+                                                            initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+                                        "$lt": dt.datetime(endYear, endMonth, endDay, 
+                                                            endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
                                     },
                                     "id": entityId
                                     }
@@ -66,34 +54,22 @@ def getEntitiesByTimeRoute(entityId, entityType, initYear, initMonth, initDay, i
         # Bulk request for entity TrafficViolation
         elif entityType == "TrafficViolation":
             for existing_entity in collection.find({
-                                                "observationDateTime": {
-                                                    "type": "Property",
-                                                    "value": {
-                                                        "@type": "DateTime",
-                                                        "@value": {
-                                                            "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                                initHour, initMinute, initSecond,0,tzinfo=tz),
-                                                            "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                                endHour, endMinute, endSecond,0,tzinfo=tz)
-                                                        }
-                                                    }
+                                                "observationDateTime.@value": {
+                                                    "$gte": dt.datetime(initYear, initMonth, initDay, 
+                                                                        initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+                                                    "$lt": dt.datetime(endYear, endMonth, endDay, 
+                                                                        endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
                                                 },
                                                 "id": entityId
                                                 }):
                 data.append(existing_entity)
             
             if len(list(collection.find({
-                                    "observationDateTime": {
-                                        "type": "Property",
-                                        "value": {
-                                            "@type": "DateTime",
-                                            "@value": {
-                                                "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                    initHour, initMinute, initSecond,0,tzinfo=tz),
-                                                "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                    endHour, endMinute, endSecond,0,tzinfo=tz)
-                                            }
-                                        }
+                                    "observationDateTime.@value": {
+                                        "$gte": dt.datetime(initYear, initMonth, initDay, 
+                                                            initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+                                        "$lt": dt.datetime(endYear, endMonth, endDay, 
+                                                            endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
                                     },
                                     "id": entityId
                                     }
@@ -104,14 +80,11 @@ def getEntitiesByTimeRoute(entityId, entityType, initYear, initMonth, initDay, i
         elif entityType == "TransportStation":
             # Search by dateLastReported
             for existing_entity in collection.find({
-                                                "dateLastReported": {
-                                                    "type": "DateTime",
-                                                    "value": {
-                                                        "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                            initHour, initMinute, initSecond,0,tzinfo=tz),
-                                                        "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                            endHour, endMinute, endSecond,0,tzinfo=tz)
-                                                    }
+                                                "dateLastReported.value": {
+                                                    "$gte": dt.datetime(initYear, initMonth, initDay, 
+                                                                        initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+                                                    "$lt": dt.datetime(endYear, endMonth, endDay, 
+                                                                        endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
                                                 },
                                                 "id": entityId
                                                 }):
@@ -119,40 +92,31 @@ def getEntitiesByTimeRoute(entityId, entityType, initYear, initMonth, initDay, i
             
             # Search by dateObserved
             for existing_entity2 in collection.find({
-                                                "dateObserved": {
-                                                    "type": "DateTime",
-                                                    "value": {
-                                                        "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                            initHour, initMinute, initSecond,0,tzinfo=tz),
-                                                        "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                            endHour, endMinute, endSecond,0,tzinfo=tz)
-                                                    }
+                                                "dateObserved.value": {
+                                                    "$gte": dt.datetime(initYear, initMonth, initDay, 
+                                                                        initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+                                                    "$lt": dt.datetime(endYear, endMonth, endDay, 
+                                                                        endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
                                                 },
                                                 "id": entityId
                                                 }):
                 data.append(existing_entity2)
 
             if (len(list(collection.find({
-                                    "dateLastReported": {
-                                        "type": "DateTime",
-                                        "value": {
-                                            "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                initHour, initMinute, initSecond,0,tzinfo=tz),
-                                            "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                endHour, endMinute, endSecond,0,tzinfo=tz)
-                                        }
+                                    "dateLastReported.value": {
+                                        "$gte": dt.datetime(initYear, initMonth, initDay, 
+                                                            initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+                                        "$lt": dt.datetime(endYear, endMonth, endDay, 
+                                                            endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
                                     },
                                     "id": entityId
                                     }
                                     ))) == 0) and (len(list(collection.find({
-                                    "dateObserved": {
-                                        "type": "DateTime",
-                                        "value": {
-                                            "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                initHour, initMinute, initSecond,0,tzinfo=tz),
-                                            "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                endHour, endMinute, endSecond,0,tzinfo=tz)
-                                        }
+                                    "dateObserved.value": {
+                                        "$gte": dt.datetime(initYear, initMonth, initDay, 
+                                                            initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+                                        "$lt": dt.datetime(endYear, endMonth, endDay, 
+                                                            endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
                                     },
                                     "id": entityId
                                     }
@@ -162,34 +126,22 @@ def getEntitiesByTimeRoute(entityId, entityType, initYear, initMonth, initDay, i
         # Bulk request for entity Vehicle
         elif entityType == "Vehicle":
             for existing_entity in collection.find({
-                                                "observationDateTime": {
-                                                    "type": "Property",
-                                                    "value": {
-                                                        "@type": "DateTime",
-                                                        "@value": {
-                                                            "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                                initHour, initMinute, initSecond,0,tzinfo=tz),
-                                                            "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                                endHour, endMinute, endSecond,0,tzinfo=tz)
-                                                        }
-                                                    }
+                                                "observationDateTime.@value": {
+                                                    "$gte": dt.datetime(initYear, initMonth, initDay, 
+                                                                        initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+                                                    "$lt": dt.datetime(endYear, endMonth, endDay, 
+                                                                        endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
                                                 },
                                                 "id": entityId
                                                 }):
                 data.append(existing_entity)
 
             if len(list(collection.find({
-                                    "observationDateTime": {
-                                        "type": "Property",
-                                        "value": {
-                                            "@type": "DateTime",
-                                            "@value": {
-                                                "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                    initHour, initMinute, initSecond,0,tzinfo=tz),
-                                                "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                    endHour, endMinute, endSecond,0,tzinfo=tz)
-                                            }
-                                        }
+                                    "observationDateTime.@value": {
+                                        "$gte": dt.datetime(initYear, initMonth, initDay, 
+                                                            initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+                                        "$lt": dt.datetime(endYear, endMonth, endDay, 
+                                                            endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
                                     },
                                     "id": entityId
                                     }

@@ -17,7 +17,7 @@ if __name__ == '__main__':
     #   crowdFlowObserverd inputs
     cFOid = "urn:ngsi-ld:CrowdFlowObserved:Valladolid_1"
     cFObool = False
-    cFOdatetime = datetime.datetime.fromisoformat("2018-08-07T11:10:00")
+    cFOdatetime = datetime.datetime.fromisoformat("2018-08-07T11:10:00").isoformat()
     cFOpc = 105
     cFOloctype = "LineString"
     cFOcords = [
@@ -36,7 +36,7 @@ if __name__ == '__main__':
                 ]
     #   trafficViolation inputs
     tVid = "ngsi-ld:Trafficviolation:234R:0212"
-    tVdatetime = datetime.datetime.fromisoformat("2021-03-11T15:51:02+05:30")
+    tVdatetime = datetime.datetime.fromisoformat("2021-03-11T15:51:02+05:30").isoformat()
     tVplate = "CAR_PLATE"
     tVstation = "trasnport station entity url?"
     tVloctype = "LineString"
@@ -57,9 +57,9 @@ if __name__ == '__main__':
     
     #   transportStation inputs
     tSid = "urn:ngsi-ld:Station:Station:MNCA-STram-L02-AP-T2"
-    tSdatetimeRep = datetime.datetime.fromisoformat("2020-03-17T08:45:00Z")
+    tSdatetimeRep = datetime.datetime.fromisoformat("2020-03-17T08:45:00Z").isoformat()
     tSvid = "VEHICLE ENTITY ID"
-    tSdatetimeObs = datetime.datetime.fromisoformat("2020-03-17T08:45:00Z")
+    tSdatetimeObs = datetime.datetime.fromisoformat("2020-03-17T08:45:00Z").isoformat()
     tScFOid = "CROWD FLOW OBSERVED ENTITY ID"
     tSdescr = "Description of bus station"
     tSloctype = "Point"
@@ -81,9 +81,9 @@ if __name__ == '__main__':
                 -3.164485591715449,
                 40.62785133667262
             ]
-    vdatetimeloc = datetime.datetime.fromisoformat("2018-09-27T12:00:00Z")
+    vdatetimeloc = datetime.datetime.fromisoformat("2018-09-27T12:00:00Z").isoformat()
     vname = "C Recogida 1"
-    vdatetimeObs = datetime.datetime.fromisoformat("2021-03-11T15:51:02+05:30")
+    vdatetimeObs = datetime.datetime.fromisoformat("2021-03-11T15:51:02+05:30").isoformat()
     vcFOid = "CROWD FLOW OBSERVED ENTITY ID"
     vsrvcOnDuty = False
     vsrvcStatus = "onRoute"
@@ -268,7 +268,9 @@ if __name__ == '__main__':
         },
     }
 
-    offset_minutes = 60
+    offset_minutes = 0
     # Creating a timezone object
     tz = timezone(timedelta(minutes=offset_minutes))
+    methods.postEntityRoute(crowdFlowObservedData, collection)
     methods.getEntitiesByTimeRoute(tSid,"TransportStation",2020,3,11,15,31,2,2023,4,5,1,5,2,tz,collection)
+    
