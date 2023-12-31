@@ -16,6 +16,7 @@ if __name__ == '__main__':
     #   Input data
     #   crowdFlowObserverd inputs
     cFOid = "urn:ngsi-ld:CrowdFlowObserved:Valladolid_1"
+    cFOversion = "version 1"
     cFObool = False
     cFOdatetime = datetime.datetime.fromisoformat("2018-08-07T11:10:00").isoformat()
     cFOpc = 105
@@ -36,6 +37,7 @@ if __name__ == '__main__':
                 ]
     #   trafficViolation inputs
     tVid = "ngsi-ld:Trafficviolation:234R:0212"
+    tVversion = "Version 1"
     tVdatetime = datetime.datetime.fromisoformat("2021-03-11T15:51:02+05:30").isoformat()
     tVplate = "CAR_PLATE"
     tVstation = "trasnport station entity url?"
@@ -57,6 +59,7 @@ if __name__ == '__main__':
     
     #   transportStation inputs
     tSid = "urn:ngsi-ld:Station:Station:MNCA-STram-L02-AP-T2"
+    tSversion = "Version 1"
     tSdatetimeRep = datetime.datetime.fromisoformat("2020-03-17T08:45:00Z").isoformat()
     tSvid = "VEHICLE ENTITY ID"
     tSdatetimeObs = datetime.datetime.fromisoformat("2020-03-17T08:45:00Z").isoformat()
@@ -72,6 +75,7 @@ if __name__ == '__main__':
     
     # vehicle inputs
     vid = "urn:ngsi-ld:Vehicle:vehicle:WasteManagement:1"
+    vversion = "Version 1"
     vsim = "9942142573"
     vffilled = 6
     vftype = "gas"
@@ -93,6 +97,7 @@ if __name__ == '__main__':
     crowdFlowObservedData = {
         "id": cFOid,
         "type": "CrowdFlowObserved",
+        "version": cFOversion,
         "congested": {
             "type": "Property",
             "value": cFObool
@@ -120,6 +125,7 @@ if __name__ == '__main__':
     trafficViolationData = {
         "id": tVid,
         "type": "TrafficViolation",
+        "version": tVversion,
         "observationDateTime": {
             "type": "Property",
             "value": {
@@ -151,6 +157,7 @@ if __name__ == '__main__':
     transportStationData= {
         "id": tSid,
         "type": "TransportStation",
+        "version": tSversion,
         "contractingAuthority": {
             "type": "Property",
             "value": "Municipality of Patras"
@@ -205,6 +212,7 @@ if __name__ == '__main__':
     vehicleData = {
         "id": vid,
         "type": "Vehicle",
+        "version": vversion,
         "category": {
             "type": "Property",
             "value": [
