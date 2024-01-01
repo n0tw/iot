@@ -318,8 +318,7 @@ if __name__ == '__main__':
             "value": {
                 "type": vloctype,
                 "coordinates": vcords
-            },
-            "observedAt": vdatetimeloc
+            }
         },
         "name": {
             "type": "Property",
@@ -357,3 +356,4 @@ if __name__ == '__main__':
     # Any method we want to use:
 
     #postEntityRoute(transportStationData)
+    postEntityRoute(vehicleData)
