@@ -4,7 +4,7 @@ const axios = require('axios');
 
 const app = express();
 
-const createEntities = async (latitude, longitude, stlat, stlon) => {
+/* const createEntities = async (latitude, longitude, stlat, stlon) => {
   const BusentityData = {
     id: 'bus123',
     type: 'Bus',
@@ -14,7 +14,7 @@ const createEntities = async (latitude, longitude, stlat, stlon) => {
     }
   };
   const stationEntityData = {
-    id: 'station123',
+    id: 'urn:ngsi-ld:Station:Station:MNCA-STram-L02-AP-T2',
     type: 'Station',
     TimeLastReported: {
       type:'string',
@@ -38,7 +38,7 @@ const createEntities = async (latitude, longitude, stlat, stlon) => {
   } catch (error) {
     console.error('Error creating entity:', error.message);
   }
-};
+}; */
 
 // Asynchronous function to read entity attribute
 const readEntityAttribute = async (entityId, attributeName) => {
@@ -72,19 +72,19 @@ const readEntityAttribute = async (entityId, attributeName) => {
   }));
 
   // Initiate the entity before starting the server
-  await createEntities('39.556593793150746', '21.767370401805035', '38.24903100595789', '21.7393154225915');
+  /* await createEntities('39.556593793150746', '21.767370401805035', '38.24903100595789', '21.7393154225915'); */
 
   // Read entity attribute
   app.get('/getlocation', async (req, res) => {
-    const loctn = await readEntityAttribute('bus123', 'location');
+    const loctn = await readEntityAttribute('urn:ngsi-ld:Vehicle:vehicle:WasteManagement:1', 'location');
     console.log(`Attribute location value:`, loctn);
     res.json({ location: loctn });
   });
 
   app.get('/getStationInfo', async (req, res) => {
-    const loctn = await readEntityAttribute('station123', 'location');
-    const time = await readEntityAttribute('station123', 'TimeLastReported');
-    const bus = await readEntityAttribute('station123', 'BusLastReported');
+    const loctn = await readEntityAttribute('urn:ngsi-ld:Station:Station:MNCA-STram-L02-AP-T2', 'location[coordinates]');
+    const time = await readEntityAttribute('urn:ngsi-ld:Station:Station:MNCA-STram-L02-AP-T2', 'dateLastReported');
+    const bus = await readEntityAttribute('urn:ngsi-ld:Station:Station:MNCA-STram-L02-AP-T2', 'vehicleLastReported');
     console.log(`Attribute location value:`, loctn);
     console.log(`Attribute location value:`, time);
     console.log(`Attribute location value:`, bus);

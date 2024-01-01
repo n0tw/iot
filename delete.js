@@ -11,3 +11,4 @@ const deleteEntity = async (entityId) => {
 
 // Usage
 deleteEntity('bus123');
+deleteEntity('station123');
