@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Visualization</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <canvas id="myChart"></canvas>
+
+    <script>
+        // Fetch data from the Python script
+        axios.get('mongodb://localhost:27017/get_data_by_time')  // Update the URL with the correct endpoint
+            .then(response => {
+                const pythonData = response.data;
+
+                // Use the received data to create the chart
+                const ctx = document.getElementById('myChart').getContext('2d');
+
+                // Assuming data is in the format { xValues: [...], yValues: [...] }
+                const myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: pythonData.xValues,
+                        datasets: [{
+                            label: 'Data from MongoDB',
+                            data: pythonData.yValues,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                beginAtZero: true
+                            },
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching data:', error));
+    </script>
+</body>
+</html>

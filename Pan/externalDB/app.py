@@ -1,4 +1,5 @@
 from datetime import timedelta, timezone
+from flask import Flask
 import datetime
 from pymongo import MongoClient
 import methods
@@ -280,5 +281,4 @@ if __name__ == '__main__':
     # Creating a timezone object
     tz = timezone(timedelta(minutes=offset_minutes))
     methods.postEntityRoute(crowdFlowObservedData, collection)
-    methods.getEntitiesByTimeRoute(tSid,"TransportStation",2020,3,11,15,31,2,2023,4,5,1,5,2,tz,collection)
-    
+    methods.getEntitiesByTimeRoute(cFOid,"CrowdFlowObserved",2018,3,11,15,31,2,2023,4,5,1,5,2,tz,collection)
