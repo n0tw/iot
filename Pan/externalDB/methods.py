@@ -159,6 +159,10 @@ def getEntitiesByTimeRoute(entityId, entityType, initYear, initMonth, initDay, i
 
 def postEntityRoute(data, collection):
     # Example: Insert data into MongoDB using Flask-PyMongo
+    givenID = data['id']
+    givenVersion = data['version']
+    if (len(collection.find_one({'id':givenID})) != 0 and len(collection.find_one({'version': givenVersion})) != 0):
+        return print({'message': 'Entity with ID {givenID} and version {givenVersion} already exists'})
     collection.insert_one(data)
     return print({'message': 'Entity posted successfully'})
 
