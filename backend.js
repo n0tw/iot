@@ -4,8 +4,8 @@ const axios = require('axios');
 
 const app = express();
 
-const createEntities = async (latitude, longitude) => {
-  const entityData = {
+const createEntities = async (latitude, longitude, stlat, stlon) => {
+  const BusentityData = {
     id: 'bus123',
     type: 'Bus',
     location: {
@@ -13,9 +13,28 @@ const createEntities = async (latitude, longitude) => {
       value: `${latitude},${longitude}`
     }
   };
+  const stationEntityData = {
+    id: 'station123',
+    type: 'Station',
+    TimeLastReported: {
+      type:'string',
+      value:'20:37:46'
+    },
+    BusLastReported: {
+      type:'string',
+      value:'bus123'
+    },
+    location: {
+      type: 'geo:point',
+      value: `${stlat},${stlon}`
+    }
+  };
+
   try {
-    const response = await axios.post('http://150.140.186.118:1026/v2/entities', entityData);
+    const response = await axios.post('http://150.140.186.118:1026/v2/entities', BusentityData);
     console.log('Entity created successfully:', response.data);
+    const response1 = await axios.post('http://150.140.186.118:1026/v2/entities', stationEntityData);
+    console.log('Entity created successfully:', response1.data);
   } catch (error) {
     console.error('Error creating entity:', error.message);
   }
@@ -53,13 +72,28 @@ const readEntityAttribute = async (entityId, attributeName) => {
   }));
 
   // Initiate the entity before starting the server
-  await createEntities('39.556593793150746', '21.767370401805035');
+  await createEntities('39.556593793150746', '21.767370401805035', '38.24903100595789', '21.7393154225915');
 
   // Read entity attribute
   app.get('/getlocation', async (req, res) => {
     const loctn = await readEntityAttribute('bus123', 'location');
     console.log(`Attribute location value:`, loctn);
     res.json({ location: loctn });
+  });
+
+  app.get('/getStationInfo', async (req, res) => {
+    const loctn = await readEntityAttribute('station123', 'location');
+    const time = await readEntityAttribute('station123', 'TimeLastReported');
+    const bus = await readEntityAttribute('station123', 'BusLastReported');
+    console.log(`Attribute location value:`, loctn);
+    console.log(`Attribute location value:`, time);
+    console.log(`Attribute location value:`, bus);
+    res.json({ 
+      location: loctn,
+      time: time,
+      bus: bus
+     });
+
   });
   
   app.get('/googlemaps', async (req, res) => {

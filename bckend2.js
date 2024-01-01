@@ -64,14 +64,14 @@ const subscriptionData = {
         "entities": [
             {
                 "id": "bus123",
-                "type": "Bus"
+                "type": "Bus",
+                "condition": {
+                    "attrs": [
+                        "location"
+                    ]
+                }
             }
-        ],
-        "condition": {
-            "attrs": [
-                "location"
-            ]
-        }
+        ]
     },
     "notification": {
         "http": {
@@ -79,6 +79,7 @@ const subscriptionData = {
         }
     }
 };
+
 
 // Fetch subscription
 fetch('http://150.140.186.118:1026/v2/subscriptions', {
