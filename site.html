@@ -165,7 +165,9 @@ async function gettime_directions(origin) {
 // Function to update the map frame based on the clicked element
 function updateMapFrame(clickedElement) {
     const selectedLocation = clickedElement.getAttribute('data-value');
+    console.log("selected location: ", selectedLocation);
     const [lat, lng] = selectedLocation.split(',').map(parseFloat);
+    console.log("lat lng: ", lat, lng);
     const newCenter = new google.maps.LatLng(lat, lng);
     /* const mapUrl = `https://www.google.com/maps/embed/v1/place?q=${selectedLocation}&key=${apiKey}`;
     document.getElementById("map").src = mapUrl; */

@@ -76,23 +76,45 @@ const readEntityAttribute = async (entityId, attributeName) => {
 
   // Read entity attribute
   app.get('/getlocation', async (req, res) => {
-    const loctn = await readEntityAttribute('urn:ngsi-ld:Vehicle:vehicle:WasteManagement:1', 'location');
-    console.log(`Attribute location value:`, loctn);
-    res.json({ location: loctn });
+    const locationData = await readEntityAttribute('urn:ngsi-ld:Vehicle:vehicle:WasteManagement:1', 'location');
+    if (locationData && locationData.coordinates) {
+      const coordinates = locationData.coordinates;
+      console.log(`Coordinates:`, coordinates);
+      res.json({ 
+        location: coordinates,
+        time: time,
+        bus: bus
+      });
+    } else {
+      console.log(`Invalid location data for entity`);
+      res.status(500).json({ error: 'Invalid location data' });
+    }
   });
 
   app.get('/getStationInfo', async (req, res) => {
-    const loctn = await readEntityAttribute('urn:ngsi-ld:Station:Station:MNCA-STram-L02-AP-T2', 'location[coordinates]');
+    const locationData = await readEntityAttribute('urn:ngsi-ld:Station:Station:MNCA-STram-L02-AP-T2', 'location');
     const time = await readEntityAttribute('urn:ngsi-ld:Station:Station:MNCA-STram-L02-AP-T2', 'dateLastReported');
     const bus = await readEntityAttribute('urn:ngsi-ld:Station:Station:MNCA-STram-L02-AP-T2', 'vehicleLastReported');
-    console.log(`Attribute location value:`, loctn);
+    if (locationData && locationData.coordinates) {
+      const coordinates = locationData.coordinates;
+      console.log(`Coordinates:`, coordinates);
+      res.json({ 
+        location: coordinates,
+        time: time,
+        bus: bus
+      });
+    } else {
+      console.log(`Invalid location data for entity`);
+      res.status(500).json({ error: 'Invalid location data' });
+    }
+    console.log(`Attribute location value:`, locationData.coordinates);
     console.log(`Attribute location value:`, time);
     console.log(`Attribute location value:`, bus);
-    res.json({ 
+    /* res.json({ 
       location: loctn,
       time: time,
       bus: bus
-     });
+     }); */
 
   });
   
