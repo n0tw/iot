@@ -88,93 +88,91 @@
     }
     const apiKey = 'AIzaSyA8UuMACOY60siOk58pGAyDzmyjhzIOGYk';
     destination = '38.280435015240556,21.768746092828305';
-document.addEventListener('DOMContentLoaded', function () {
-    // Add event listener for clicks on the window
-    window.addEventListener('click', handleWindowClick);
+    document.addEventListener('DOMContentLoaded', function () {
+        window.addEventListener('click', handleWindowClick);
 
-    // Add event listener for input in the search box
-    const searchInput = document.getElementById('searchInput');
-    searchInput.addEventListener('input', handleSearchInput);
-});
-
-// Function to handle clicks on the window
-function handleWindowClick(event) {
-    const dropdownContent = event.target.closest('.dropdown-content');
-    
-    if (dropdownContent) {
-        getLocationAndUpdateDataValue(event.target);
-        updateMapFrame(event.target);
-    }
-}
-
-// Function to handle input in the search box
-function handleSearchInput() {
-    const searchInput = document.getElementById('searchInput');
-    const filter = searchInput.value.toLowerCase();
-    const dropdownItems = document.querySelectorAll('.dropdown-content a');
-
-    dropdownItems.forEach(function (item) {
-        const text = item.textContent.toLowerCase();
-        item.style.display = text.includes(filter) ? 'block' : 'none';
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', handleSearchInput);
     });
-}
 
-// Function to get location and update data-value
-async function getLocationAndUpdateDataValue(clickedElement) {
-    try {
-        const response = await fetch('http://localhost:3000/getlocation');
-        const data = await response.json();
-
-        // Update the data-value attribute for the clicked element
-        clickedElement.setAttribute('data-value', data.location);
-        console.log('Location updated:', data.location);
-        destination=data.location;
-    } catch (error) {
-        console.error('Error fetching location:', error.message);
+    // Function to handle clicks on the window
+    async function handleWindowClick(event) {
+        const dropdownContent = event.target.closest('.dropdown-content');
+        
+        if (dropdownContent) {
+            await getLocationAndUpdateDataValue(event.target);
+            updateMapFrame(event.target);
+        }
     }
-}
 
-async function getStationLastUpdate(clickedElement) {
-    try {
-        const response = await fetch('http://localhost:3000/getStationInfo');
-        const data = await response.json();
+    // Function to handle input in the search box
+    function handleSearchInput() {
+        const searchInput = document.getElementById('searchInput');
+        const filter = searchInput.value.toLowerCase();
+        const dropdownItems = document.querySelectorAll('.dropdown-content a');
 
-        document.getElementById("info").innerText = "Last bus seen: "+data.bus+"\nAt: "+data.time
-    } catch (error) {
-        console.error('Error fetching location:', error.message);
+        dropdownItems.forEach(function (item) {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(filter) ? 'block' : 'none';
+        });
     }
-}
 
-async function gettime_directions(origin) {
-    try {
-        const response = await fetch('http://localhost:3000/googlemaps');
-        const dt = await response.json();
-        fetch(`http://localhost:3000/googlemaps?origin=${origin}&destination=${destination}&key=AIzaSyA8UuMACOY60siOk58pGAyDzmyjhzIOGYk`)
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-            })
-            .catch(error => console.error('Error:', error));
-        console.log(`http://localhost:3000/googlemaps?origin=${origin}&destination=${destination}&key=${apiKey}`)
-    } catch (error) {
-        console.error('Error fetching location:', error.message);
+    // Function to get location and update data-value
+    async function getLocationAndUpdateDataValue(clickedElement) {
+        try {
+            const response = await fetch('http://localhost:3000/getlocation');
+            const data = await response.json();
+
+            // Update the data-value attribute for the clicked element
+            clickedElement.setAttribute('data-value', data.location.coordinates);
+            console.log('Location updated:', data.location.coordinates);
+            destination=data.location.coordinates;
+        } catch (error) {
+            console.error('Error fetching location:', error.message);
+        }
     }
-    
-}
 
-// Function to update the map frame based on the clicked element
-function updateMapFrame(clickedElement) {
-    const selectedLocation = clickedElement.getAttribute('data-value');
-    console.log("selected location: ", selectedLocation);
-    const [lat, lng] = selectedLocation.split(',').map(parseFloat);
-    console.log("lat lng: ", lat, lng);
-    const newCenter = new google.maps.LatLng(lat, lng);
-    /* const mapUrl = `https://www.google.com/maps/embed/v1/place?q=${selectedLocation}&key=${apiKey}`;
-    document.getElementById("map").src = mapUrl; */
-    map.setCenter(newCenter);
-}
+    async function getStationLastUpdate(clickedElement) {
+        try {
+            const response = await fetch('http://localhost:3000/getStationInfo');
+            const data = await response.json();
 
-// Function to get the user's location
+            document.getElementById("info").innerText = "Last bus seen: "+data.bus+"\nAt: "+data.time
+        } catch (error) {
+            console.error('Error fetching location:', error.message);
+        }
+    }
+
+    async function gettime_directions(origin) {
+        try {
+            const response = await fetch('http://localhost:3000/googlemaps');
+            const dt = await response.json();
+            fetch(`http://localhost:3000/googlemaps?origin=${origin}&destination=${destination}&key=AIzaSyA8UuMACOY60siOk58pGAyDzmyjhzIOGYk`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                })
+                .catch(error => console.error('Error:', error));
+            console.log(`http://localhost:3000/googlemaps?origin=${origin}&destination=${destination}&key=${apiKey}`)
+        } catch (error) {
+            console.error('Error fetching location:', error.message);
+        }
+        
+    }
+
+    // Function to update the map frame based on the clicked element
+    function updateMapFrame(clickedElement) {
+        const selectedLocation = clickedElement.getAttribute('data-value');
+        console.log("selected location: ", selectedLocation);
+        const [lat, lng] = selectedLocation.split(',').map(parseFloat);
+        console.log("lat lng: ", lat, lng);
+        const newCenter = new google.maps.LatLng(lat, lng);
+        /* const mapUrl = `https://www.google.com/maps/embed/v1/place?q=${selectedLocation}&key=${apiKey}`;
+        document.getElementById("map").src = mapUrl; */
+        map.setCenter(newCenter);
+    }
+
+    // Function to get the user's location
 function getUserLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(showPosition, showError);
