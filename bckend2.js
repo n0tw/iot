@@ -63,6 +63,21 @@ const stations = [
     }
 ];
 
+const buses = [
+    {
+        id: "urn:ngsi-ld:Vehicle:vehicle:WasteManagement:1",
+        name: "Bus1"
+    },
+    {
+        id: "urn:ngsi-ld:Vehicle:vehicle:WasteManagement:2",
+        name: "Bus2"
+    },
+    {
+        id: "urn:ngsi-ld:Vehicle:vehicle:WasteManagement:3",
+        name: "Bus3"
+    }
+];
+
 io.on('connection', (socket) => {
     console.log('Client connected');
 
@@ -82,6 +97,19 @@ io.on('connection', (socket) => {
         // Emit the 'update' event with station name
         socket.emit('update', data);
     }, 5000); // Simulate updates every 5 seconds
+
+    setInterval(() => {
+        const randomStationIndex = Math.floor(Math.random() * stations.length);
+        const bus = buses[randomStationIndex];
+
+        // Simulate data received from the context broker
+        const busdata = {
+            busName: bus.name,
+            attributeValues: {lgn: Math.floor(Math.random() * 100),lat: Math.floor(Math.random() * 100)}, // Example random attribute value
+            entityAttribute: "location"
+        };
+        socket.emit('buslocation', busdata);
+    }, 3000);
 
     // Handle disconnection
     socket.on('disconnect', () => {

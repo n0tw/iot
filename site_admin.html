@@ -8,67 +8,139 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
+            margin-left: 20px;
+            margin-right: 20px;
+            margin-top: 100px;
+            margin-bottom: 100px;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
+            flex-direction: column; /* Set the direction to column */
+            align-items: center; /* Center items horizontally */
         }
-        #container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        .map-container {
+            width: 100%; /* Set the width to 100% for full width */
+            height: 400px; /* Adjust the height as needed */
+        }
+        #chart-table-container {
+            display: flex; /* Set the display to flex for side-by-side layout */
+            width: 80%; /* Adjust the width of the container */
+            justify-content: space-between; /* Add space between the chart and table */
+            margin-top: 20px; /* Add margin at the top */
+        }
+        #chart-container, #data-table-container {
+            width: 45%; /* Adjust the width of the containers */
+            margin: 10px;
         }
         #chart-container {
-            width: 100%;
-            height: 100%;
+            width: 65%; /* Adjust the width of the chart container */
         }
-        #data-table, #bus-table {
-            margin-top: 20px;
+        #data-table {
             border-collapse: collapse;
-            width: 80%;
+            width: 100%; /* Set the width of the tables to 100% */
+            position: relative;
         }
-        #data-table th, #data-table td, #bus-table th, #bus-table td {
+        #data-table th, #data-table td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
         }
-        #data-table th, #bus-table th {
+        #data-table th {
             background-color: #f2f2f2;
+        }
+        #warnings-title {
+            text-align: center; /* Center the title */
+            margin-bottom: 10px; /* Add margin below the title */
         }
     </style>
 </head>
 <body>
 
-    <div id="container">
+    <div class="map-container" id="map"></div>
+
+    <div id="chart-table-container">
         <div id="chart-container">
             <canvas id="myChart"></canvas>
         </div>
 
-        <table id="data-table">
-            <thead>
-                <tr>
-                    <th>Element</th>
-                    <th>Value</th>
-                </tr>
-            </thead>
-            <tbody id="table-body"></tbody>
-        </table>
-        <table id="bus-table">
-            <thead>
-                <tr>
-                    <th>Buses on the Road</th>
-                    <th>Last Station</th>
-                    <th>Time Since Last Seen</th>
-                </tr>
-            </thead>
-            <tbody id="bus-table-body"></tbody>
-        </table>
+        <div id="data-table-container">
+            <h3 id="warnings-title">Warnings</h3>
+            <table id="data-table">
+                <thead>
+                    <tr>
+                        <th>Element</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body"></tbody>
+            </table>
+        </div>
     </div>
+
+    <table id="bus-table">
+        <thead>
+            <tr>
+                <th>Buses on the Road</th>
+                <th>Last Station</th>
+                <th>Time Since Last Seen</th>
+            </tr>
+        </thead>
+        <tbody id="bus-table-body"></tbody>
+    </table>
+
         <script>
             const socket = io('http://127.0.0.1:8000');
-            
-            // Initialize an empty chart
+            var map;
+            var bus1;
+            function initMap() {
+                console.log('Map initialized');
+                map = new google.maps.Map(document.getElementById('map'), {
+                    center: { lat: 38.24630509364979, lng: 21.735171687989045 },
+                    zoom: 14
+                });
+                document.getElementById('map').style.width = '800px';
+                infoWindow = new google.maps.InfoWindow();
+
+                var markerSize = new google.maps.Size(30, 30);
+                var busStation1 = new google.maps.Marker({
+                    position: { lat: 38.24541552904563, lng: 21.739110646203976 },
+                    map: map,
+                    title: 'Bus Station 1',
+                    icon: {
+                        url: 'Canberra_Bus_icon.svg.png',
+                        scaledSize: markerSize
+                    }
+                });
+                bus1 = new google.maps.Marker({
+                    position: { lat: 38.25131035681778, lng: 21.742257624039638 },
+                    map: map,
+                    title: 'Bus Station 1',
+                    icon: {
+                        url: 'png-transparent-noise-sound.png',
+                        scaledSize: markerSize
+                    }
+                });
+                bus1.addListener('click', function () {
+                    getbusLastUpdate();
+                    var contentString = '<div id="content">' +
+                        '<h6 id="firstHeading" class="firstHeading">Bus Station: Zaimi</h6>' +
+                        '<p id ="info"></p>' +
+                        '</div>';
+
+                    // Set the content and open the info window
+                    infoWindow.setContent(contentString);
+                    infoWindow.open(map, bus1);
+                });
+            }
+            async function getbusLastUpdate(clickedElement) {
+                try {
+                    const response = await fetch('http://localhost:3000/getBusInfo');
+                    const data = await response.json();
+
+                    document.getElementById("info").innerText = "Last station: " + data.station + "\nAt: " + data.time + "\nPeople Count: " + data.peoplecount;
+                } catch (error) {
+                    console.error('Error fetching location:', error.message);
+                }
+            }
+                
             const ctx = document.getElementById('myChart').getContext('2d');
             const myChart = new Chart(ctx, {
                 type: 'bar', // Change the chart type to 'bar'
@@ -97,50 +169,53 @@
             });
 
             
-            console.log('Chart initialized:', myChart);
             const stationDataMap = [];
             
-        socket.on('update', data => {
-            const stationName = data.stationName;
-            const existingIndex = stationDataMap.findIndex(entry => entry.stationName === stationName);
+            socket.on('update', data => {
+                const stationName = data.stationName;
+                const existingIndex = stationDataMap.findIndex(entry => entry.stationName === stationName);
 
-            if (existingIndex !== -1) {
-                const dataIndex = stationDataMap[existingIndex].dataIndex;
-                myChart.data.datasets[0].data[dataIndex] = data.attributeValue;
-            }
-            else{
-                stationDataMap.push({
-                    stationName: stationName,
-                    dataIndex: myChart.data.labels.length, // Index for the new station name
-                });
-                myChart.data.labels.push(stationName);
-                myChart.data.datasets[0].data.push(data.attributeValue);
-            }
+                if (existingIndex !== -1) {
+                    const dataIndex = stationDataMap[existingIndex].dataIndex;
+                    myChart.data.datasets[0].data[dataIndex] = data.attributeValue;
+                }
+                else{
+                    stationDataMap.push({
+                        stationName: stationName,
+                        dataIndex: myChart.data.labels.length, // Index for the new station name
+                    });
+                    myChart.data.labels.push(stationName);
+                    myChart.data.datasets[0].data.push(data.attributeValue);
+                }
 
-           
+            
 
-            const maxDataPoints = 10;
-            if (myChart.data.labels.length > maxDataPoints) {
-                myChart.data.labels.shift();
-                myChart.data.datasets[0].data.shift();
-            }
+                const maxDataPoints = 10;
+                if (myChart.data.labels.length > maxDataPoints) {
+                    myChart.data.labels.shift();
+                    myChart.data.datasets[0].data.shift();
+                }
 
-            myChart.update();
+                myChart.update();
+                
+                tableBody = document.getElementById('table-body');
+                const newRow = tableBody.insertRow(0);
+                const cell1 = newRow.insertCell(0);
+                const cell2 = newRow.insertCell(1);
+                cell1.textContent = data.entityAttribute;
+                cell2.textContent = data.attributeValue+parseInt(data.changeInValue);
+                if (tableBody.rows.length==10){
+                    tableBody.deleteRow(-1);
+                }
+            });
 
-            // Update the table
-            tableBody = document.getElementById('table-body');
-            const newRow = tableBody.insertRow(0);
-            const cell1 = newRow.insertCell(0);
-            const cell2 = newRow.insertCell(1);
-            cell1.textContent = data.entityAttribute;
-            cell2.textContent = data.attributeValue+parseInt(data.changeInValue);
-            if (tableBody.rows.length==5){
-                tableBody.deleteRow(-1);
-            }
-        });
+            socket.on('buslocation', busdata => {
+                console.log("busdata.location ",busdata.attributeValues);
+                bus1.setPosition(new google.maps.LatLng(busdata.attributeValues.lat, busdata.attributeValues.lng));
+            });
         </script>
         
-    
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA8UuMACOY60siOk58pGAyDzmyjhzIOGYk&callback=initMap&libraries=places,geometry&solution_channel=GMP_QB_commutes_v2_c" async defer></script>
     </body>
     </html>
     
