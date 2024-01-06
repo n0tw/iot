@@ -67,21 +67,21 @@
     </div>
         <script>
             const socket = io('http://127.0.0.1:8000');
-        
+            
             // Initialize an empty chart
             const ctx = document.getElementById('myChart').getContext('2d');
             const myChart = new Chart(ctx, {
-                type: 'line',
+                type: 'bar', // Change the chart type to 'bar'
                 data: {
                     labels: [],
                     datasets: [{
                         label: 'Attribute Progress',
                         data: [],
-                        fill: false,
-                        borderColor: 'rgb(75, 192, 192)',
-                        tension: 0.1
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)', // Bar color with alpha (transparency)
+                        borderColor: 'rgba(75, 192, 192, 1)', // Border color
+                        borderWidth: 1, // Border width
                     }]
-                },
+                },/* 
                 options: {
                     scales: {
                         x: {
@@ -89,47 +89,55 @@
                             position: 'bottom'
                         },
                         y: {
-                            min: 0,
+                            beginAtZero: true,
                             max: 100
                         }
                     }
-                }
+                } */
             });
-        
-            // Update the chart and table with real-time data
-            socket.on('update', data => {
-                const timestamp = new Date().toISOString();
-        
-                // Update the chart
-                myChart.data.labels.push(timestamp);
+
+            
+            console.log('Chart initialized:', myChart);
+            const stationDataMap = [];
+            
+        socket.on('update', data => {
+            const stationName = data.stationName;
+            const existingIndex = stationDataMap.findIndex(entry => entry.stationName === stationName);
+
+            if (existingIndex !== -1) {
+                const dataIndex = stationDataMap[existingIndex].dataIndex;
+                myChart.data.datasets[0].data[dataIndex] = data.attributeValue;
+            }
+            else{
+                stationDataMap.push({
+                    stationName: stationName,
+                    dataIndex: myChart.data.labels.length, // Index for the new station name
+                });
+                myChart.data.labels.push(stationName);
                 myChart.data.datasets[0].data.push(data.attributeValue);
-        
-                const maxDataPoints = 10;
-                if (myChart.data.labels.length > maxDataPoints) {
-                    myChart.data.labels.shift();
-                    myChart.data.datasets[0].data.shift();
-                }
-        
-                myChart.update();
-        
-                // Update the table
-                const tableBody = document.getElementById('table-body');
-                const newRow = tableBody.insertRow(0);
-                const cell1 = newRow.insertCell(0);
-                const cell2 = newRow.insertCell(1);
-                cell1.textContent = data.entityAttribute;
-                cell2.textContent = data.changeInValue;
-            });
-            socket.on('busUpdate', busData => {
-                const busTableBody = document.getElementById('bus-table-body');
-                const newRow = busTableBody.insertRow(0);
-                const cell1 = newRow.insertCell(0);
-                const cell2 = newRow.insertCell(1);
-                const cell3 = newRow.insertCell(2);
-                cell1.textContent = busData.busCount;
-                cell2.textContent = busData.lastStation;
-                cell3.textContent = busData.timeSinceLastSeen;
-            });
+            }
+
+           
+
+            const maxDataPoints = 10;
+            if (myChart.data.labels.length > maxDataPoints) {
+                myChart.data.labels.shift();
+                myChart.data.datasets[0].data.shift();
+            }
+
+            myChart.update();
+
+            // Update the table
+            tableBody = document.getElementById('table-body');
+            const newRow = tableBody.insertRow(0);
+            const cell1 = newRow.insertCell(0);
+            const cell2 = newRow.insertCell(1);
+            cell1.textContent = data.entityAttribute;
+            cell2.textContent = data.attributeValue+parseInt(data.changeInValue);
+            if (tableBody.rows.length==5){
+                tableBody.deleteRow(-1);
+            }
+        });
         </script>
         
     

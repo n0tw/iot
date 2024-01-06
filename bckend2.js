@@ -9,6 +9,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
+
 app.use(bodyParser.json());
 app.use(cors({
     origin: 'http://127.0.0.1:8000',
@@ -47,10 +48,40 @@ app.post('/subscribe', async (req, res) => {
     }
 });
 
+const stations = [
+    {
+        id: "urn:ngsi-ld:Station:Station:MNCA-STram-L02-AP-T2",
+        name: "Zaimi"
+    },
+    {
+        id: "urn:ngsi-ld:Station:Station:MNCA-STram-L02-AP-T3",
+        name: "Pritaneia"
+    },
+    {
+        id: "urn:ngsi-ld:Station:Station:MNCA-STram-L02-AP-T4",
+        name: "Ermou"
+    }
+];
 
-// Socket.IO connection event
 io.on('connection', (socket) => {
     console.log('Client connected');
+
+    // Simulate updates with station names
+    setInterval(() => {
+        const randomStationIndex = Math.floor(Math.random() * stations.length);
+        const station = stations[randomStationIndex];
+
+        // Simulate data received from the context broker
+        const data = {
+            stationName: station.name,
+            attributeValue: Math.floor(Math.random() * 100), // Example random attribute value
+            entityAttribute: "crowdFlowObserved", // Example entity attribute
+            changeInValue: "+5", // Example change in value
+        };
+
+        // Emit the 'update' event with station name
+        socket.emit('update', data);
+    }, 5000); // Simulate updates every 5 seconds
 
     // Handle disconnection
     socket.on('disconnect', () => {
@@ -63,8 +94,8 @@ const subscriptionData = {
     "subject": {
         "entities": [
             {
-                "id": "bus123",
-                "type": "Bus",
+                "id": "urn:ngsi-ld:Station:Station:MNCA-STram-L02-AP-T2",
+                "type": "TransportStation",
                 "condition": {
                     "attrs": [
                         "location"
