@@ -231,3 +231,6 @@ def deleteEntityRoute(entityId, collection):
     except Exception as e:
         print(f"Error: {str(e)}")
         return print({'message': 'Error occurred during delete'}, 500)
+    
+if __name__ == '__main__':
+    app.run(debug=True)
