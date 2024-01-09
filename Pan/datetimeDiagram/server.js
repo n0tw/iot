@@ -19,19 +19,63 @@ const DataModel = mongoose.model('Data', dataSchema);
 
 // Define a route to get data from MongoDB
 
-const readDataByTime = async(entityId, entityType, initYear, initMonth, initDay, initHour, initMinute, initSecond,
+const readDataByTime = async(req, res, entityId, entityType, initYear, initMonth, initDay, initHour, initMinute, initSecond,
   endYear, endMonth, endDay, endHour, endMinute, endSecond, tz_offset) => {
   try {
     // Make an HTTP request to your Flask API endpoint
-    const response = await axios.get(`http://localhost:5000/entities_by_time/${entityId}/${entityType}/${initYear}/${initMonth}
-                                      /${initDay}/${initHour}/${initMinute}/${initSecond}/${endYear}/${endMonth}/${endDay}/${endHour}
-                                      /${endMinute}/${endSecond}/${tz_offset}`);
+    const response = await axios.get(`http://localhost:5000/entities_by_time/${entityId}/${entityType}/${initYear}/${initMonth}/${initDay}/${initHour}/${initMinute}/${initSecond}/${endYear}/${endMonth}/${endDay}/${endHour}/${endMinute}/${endSecond}/${tz_offset}`);
 
     // Retrieve data from the Flask API response
-    const dataFromFlask = response.data;
+    const responseData = response.data;
+
+    console.log('Type of responseData:', typeof responseData);
+    console.log('Content of responseData:', responseData);
+
+    // Extract the 'data' array from responseData
+    const data = responseData.data;
+
+    console.log('Type of data:', typeof data);
+    console.log('Content of data:', data);
+
+    // Flatten the array of data to get individual entries
+    const allEntries = data.flatMap(data => data);
+
+    // Extract datetime and peopleCount values
+    const xValues = allEntries.map(entry => entry.dateObserved.value['@value']);
+    const yValues = allEntries.map(entry => entry.peopleCount.value);
+
+
+    // Create a simple line chart using Chart.js
+    // const canvasRenderService = new ChartJSNodeCanvas({ width: 800, height: 400 });
+    // const configuration = {
+    //   type: 'line',
+    //   data: {
+    //     labels: xValues,
+    //     datasets: [{
+    //       label: 'Data Values',
+    //       data: yValues,
+    //       borderColor: 'rgb(75, 192, 192)',
+    //       borderWidth: 2,
+    //       fill: false,
+    //     }],
+    //   },
+    //   options: {
+    //     responsive: false,
+    //     scales: {
+    //       x: {
+    //         type: 'linear',
+    //         position: 'bottom',
+    //       },
+    //     },
+    //   },
+    // };
+
+    // const image = await canvasRenderService.renderToBuffer(configuration);
+    // res.set('Content-Type', 'image/png');
+    // res.send(image);
 
     // Send the data as JSON
-    res.json(dataFromFlask);
+    res.json({xValues, yValues});
   } catch (error) {
     console.error('Error fetching data from MongoDB:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -41,57 +85,21 @@ const readDataByTime = async(entityId, entityType, initYear, initMonth, initDay,
 (async () => {
   // Enable CORS for all routes
   app.use(cors({
-    origin: 'http://127.0.0.1:3000', // Update this to match your frontend origin
+    origin: '*',
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
   }));
 
-  // Initiate the entity before starting the server
-  /* await createEntities('39.556593793150746', '21.767370401805035', '38.24903100595789', '21.7393154225915'); */
-
   // Read entity attribute
   app.get('/getDataByTime', async (req, res) => {
     try {
-      const data = await readDataByTime("urn:ngsi-ld:CrowdFlowObserved:Valladolid_1","CrowdFlowObserved",
-                                        2018,3,11,15,31,2,2023,4,5,1,5,2,0);
-
-      // Flatten the array of data to get individual entries
-      const allEntries = arrayOfDataFromFlask.flatMap(data => data);
-
-      // Extract datetime and peopleCount values
-      const xValues = allEntries.map(entry => entry.dateObserved.value['@value']);
-      const yValues = allEntries.map(entry => entry.peopleCount.value);
-
-  
-      // Create a simple line chart using Chart.js
-      const canvasRenderService = new ChartJSNodeCanvas({ width: 800, height: 400 });
-      const configuration = {
-        type: 'line',
-        data: {
-          labels: xValues,
-          datasets: [{
-            label: 'Data Values',
-            data: yValues,
-            borderColor: 'rgb(75, 192, 192)',
-            borderWidth: 2,
-            fill: false,
-          }],
-        },
-        options: {
-          responsive: false,
-          scales: {
-            x: {
-              type: 'linear',
-              position: 'bottom',
-            },
-          },
-        },
-      };
-  
-      const image = await canvasRenderService.renderToBuffer(configuration);
-      res.set('Content-Type', 'image/png');
-      res.send(image);
-  
+      const data = await readDataByTime(
+        req,
+        res,
+        "urn:ngsi-ld:CrowdFlowObserved:Valladolid_1",
+        "CrowdFlowObserved",
+        2018,3,11,15,31,2,2023,4,5,1,5,2,0
+        );
     } catch (error) {
       console.error('Error fetching data from MongoDB:', error);
       res.status(500).json({ error: 'Internal server error' });
