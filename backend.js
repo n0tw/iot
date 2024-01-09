@@ -1,45 +1,28 @@
 const express = require('express');
 const cors = require('cors');
+const socketIO = require('socket.io');
 const axios = require('axios');
 
 const app = express();
+const server = require('http').createServer(app);
+const io = socketIO(server);
 
-/* const createEntities = async (latitude, longitude, stlat, stlon) => {
-  const BusentityData = {
-    id: 'bus123',
-    type: 'Bus',
-    location: {
-      type: 'geo:point', 
-      value: `${latitude},${longitude}`
-    }
-  };
-  const stationEntityData = {
-    id: 'urn:ngsi-ld:Station:Station:MNCA-STram-L02-AP-T2',
-    type: 'Station',
-    TimeLastReported: {
-      type:'string',
-      value:'20:37:46'
-    },
-    BusLastReported: {
-      type:'string',
-      value:'bus123'
-    },
-    location: {
-      type: 'geo:point',
-      value: `${stlat},${stlon}`
-    }
-  };
-
-  try {
-    const response = await axios.post('http://150.140.186.118:1026/v2/entities', BusentityData);
-    console.log('Entity created successfully:', response.data);
-    const response1 = await axios.post('http://150.140.186.118:1026/v2/entities', stationEntityData);
-    console.log('Entity created successfully:', response1.data);
-  } catch (error) {
-    console.error('Error creating entity:', error.message);
+const buses = [
+  {
+      id: "urn:ngsi-ld:Vehicle:vehicle:WasteManagement:1",
+      name: "bus1"
+  },
+  {
+      id: "urn:ngsi-ld:Vehicle:vehicle:WasteManagement:2",
+      name: "bus2"
+  },
+  {
+      id: "urn:ngsi-ld:Vehicle:vehicle:WasteManagement:3",
+      name: "bus3"
   }
-}; */
-
+];
+let congestions = [];
+let busdata = [];
 // Asynchronous function to read entity attribute
 const readEntityAttribute = async (entityId, attributeName) => {
   try {
@@ -92,9 +75,10 @@ const readEntityAttribute = async (entityId, attributeName) => {
   });
 
   app.get('/getStationInfo', async (req, res) => {
-    const locationData = await readEntityAttribute('urn:ngsi-ld:Station:Station:MNCA-STram-L02-AP-T2', 'location');
-    const time = await readEntityAttribute('urn:ngsi-ld:Station:Station:MNCA-STram-L02-AP-T2', 'dateLastReported');
-    const bus = await readEntityAttribute('urn:ngsi-ld:Station:Station:MNCA-STram-L02-AP-T2', 'vehicleLastReported');
+    const stationId = req.query.stationid;
+    const locationData = await readEntityAttribute(stationId, 'location');
+    const time = await readEntityAttribute(stationId, 'dateLastReported');
+    const bus = await readEntityAttribute(stationId, 'vehicleLastReported');
     if (locationData && locationData.coordinates) {
       const coordinates = locationData.coordinates;
       console.log(`Coordinates:`, coordinates);
@@ -105,6 +89,7 @@ const readEntityAttribute = async (entityId, attributeName) => {
       });
     } else {
       console.log(`Invalid location data for entity`);
+      console.log("stationId", stationId);
       res.status(500).json({ error: 'Invalid location data' });
     }
     console.log(`Attribute location value:`, locationData.coordinates);
@@ -117,7 +102,10 @@ const readEntityAttribute = async (entityId, attributeName) => {
      }); */
 
   });
-  
+  app.get('/getBusInfo', async (req, res) => {
+    res.json(busdata);
+  });
+
   app.get('/googlemaps', async (req, res) => {
     try {
       const { origin, destination, key } = req.query;
@@ -130,10 +118,67 @@ const readEntityAttribute = async (entityId, attributeName) => {
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
-  
+
+  const CongestedAllert = async (id) => {
+    console.log(`${id} congested!!`);
+  };
+
+  const CongestionStopped = async (id) => {
+    console.log(`Congestion of ${id} stopped.`);
+  };
+
+  const updateBusData = async () => {
+    try {
+        busdata = await Promise.all(buses.map(async (bus) => {
+            const congestedid = await readEntityAttribute(bus.id, 'crowdFlowObserved');
+            const locationData = await readEntityAttribute(bus.id, 'location');
+            return {
+                id: bus.id,
+                location: locationData.coordinates,
+                peopleCount: await readEntityAttribute(congestedid, 'peopleCount'),
+                congested: await readEntityAttribute(congestedid, 'congested'),
+                route: await readEntityAttribute(bus.id, 'serviceStatus')
+            };
+        }));
+
+          const filteredbuss = busdata.filter(bus => bus.congested === true && !congestions.includes(bus.id));
+          const removebuss = busdata.filter(bus => bus.congested === false && congestions.includes(bus.id));
+          congestions = congestions.filter(e => {
+              CongestionStopped(bus.id);
+              !removebuss.map(bus => bus.id).includes(e);
+          });
+
+          filteredbuss.forEach(bus => {
+              CongestedAllert(bus.id);
+              congestions.push(bus.id);
+          });
+
+      } catch (error) {
+          console.error('Error updating station data:', error.message);
+      }
+  };
+
+
+  updateBusData();
+  app.get('/getBusInfo', async (req, res) => {
+      res.json(busdata);
+  });
+
+  io.on('connection', (socket) => {
+    console.log('Client connected');
+    setInterval(() => {
+        updateBusData();
+        socket.emit('busupdate', busdata);
+    }, 3000);
+
+    socket.on('disconnect', () => {
+        console.log('Client disconnected');
+    });
+});
+
   // Start the Express server
   const PORT = 3000;
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}/`);
   });
 })();

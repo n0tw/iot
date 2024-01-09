@@ -52,8 +52,11 @@
 
         </div>
   </body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
   <script>
+    const socket = io('http://127.0.0.1:3000');
     var map;
+    var buses1 =[];
     function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
             center: {lat:38.24630509364979, lng:21.735171687989045},
@@ -63,28 +66,120 @@
         infoWindow = new google.maps.InfoWindow();
 
         var markerSize = new google.maps.Size(30, 30);
-        var busStation1 = new google.maps.Marker({
-            position: {lat:38.24541552904563,lng: 21.739110646203976},
+
+        bus1 = new google.maps.Marker({
+            position: { lat: 38.24781910822103,lng: 21.737767737314154},
             map: map,
-            title: 'Bus Station 1',
+            title: 'Bus 1',
             icon: {
-                url: 'png-transparent-noise-sound.png',
+                url: 'bus.png',
                 scaledSize: markerSize
             }
         });
-        busStation1.addListener('click', function () {
-            // Content for the info window
-            getStationLastUpdate()
-            var contentString = '<div id="content">' +
-                '<h6 id="firstHeading" class="firstHeading">Bus Station: Zaimi</h6>' +
-                '<p id ="info"></p>' +
+        bus2 = new google.maps.Marker({
+            position: { lat: 38.25005986475536,lng:  21.740551357339115},
+            map: map,
+            title: 'Bus 1',
+            icon: {
+                url: 'bus.png',
+                scaledSize: markerSize
+            }
+        });
+        bus3 = new google.maps.Marker({
+            position: { lat: 38.2550049442128,lng: 21.742603234909094},
+            map: map,
+            title: 'Bus 1',
+            icon: {
+                url: 'bus.png',
+                scaledSize: markerSize
+            }
+        });
+        bus1.addListener('click', function () {
+            getbusLastUpdate();
+            var contentString = '<div id="content1">' +
+                '<h6 id="firstHeading1" class="firstHeading">Bus 1: Zaimi</h6>' +
+                '<p id ="info1"></p>' +
                 '</div>';
 
             // Set the content and open the info window
             infoWindow.setContent(contentString);
+            infoWindow.open(map, bus1);
+        });
+        var busStation1 = new google.maps.Marker({
+            position: {lat:38.246445272035466,lng: 21.73638024304918},
+            map: map,
+            title: 'Bus Station 1',
+            icon: {
+                url: 'Canberra_Bus_icon.svg.png',
+                scaledSize: markerSize
+            }
+        });
+        var busStation2 = new google.maps.Marker({
+            position: {lat:38.24902518125625,lng: 21.739327222337103},
+            map: map,
+            title: 'Bus Station 2',
+            icon: {
+                url: 'Canberra_Bus_icon.svg.png',
+                scaledSize: markerSize
+            }
+        });
+        var busStation3 = new google.maps.Marker({
+            position: {lat:38.286231755636656,lng: 21.78606593308436},
+            map: map,
+            title: 'Bus Station 3',
+            icon: {
+                url: 'Canberra_Bus_icon.svg.png',
+                scaledSize: markerSize
+            }
+        });
+
+        busStation1.addListener('click', function () {
+            // Content for the info window
+            getStationLastUpdate("urn:ngsi-ld:Station:Station:MNCA-STram-L02-AP-T4");
+            var contentString = '<div id="content">' +
+            '<h6 id="firstHeading" class="firstHeading">Bus Station: Ermou</h6>' +
+            '<p id ="info"></p>' +
+            '</div>';
+            // Set the content and open the info window
+            infoWindow.setContent(contentString);
             infoWindow.open(map, busStation1);
         });
-    
+        busStation2.addListener('click', function () {
+            // Content for the info window
+            getStationLastUpdate("urn:ngsi-ld:Station:Station:MNCA-STram-L02-AP-T2");
+            var contentString = '<div id="content">' +
+            '<h6 id="firstHeading" class="firstHeading">Bus Station: Zaimi</h6>' +
+            '<p id ="info"></p>' +
+            '</div>';
+            // Set the content and open the info window
+            infoWindow.setContent(contentString);
+            infoWindow.open(map, busStation2);
+        });
+        busStation3.addListener('click', function () {
+            // Content for the info window
+            getStationLastUpdate("urn:ngsi-ld:Station:Station:MNCA-STram-L02-AP-T3");
+            var contentString = '<div id="content">' +
+            '<h6 id="firstHeading" class="firstHeading">Bus Station: Pritaneia</h6>' +
+            '<p id ="info"></p>' +
+            '</div>';
+            // Set the content and open the info window
+            infoWindow.setContent(contentString);
+            infoWindow.open(map, busStation3);
+        });
+        buses1 = [
+        {
+            id: "urn:ngsi-ld:Vehicle:vehicle:WasteManagement:1",
+            name: bus1
+        },
+        {
+            id: "urn:ngsi-ld:Vehicle:vehicle:WasteManagement:2",
+            name: bus2
+        },
+        {
+            id: "urn:ngsi-ld:Vehicle:vehicle:WasteManagement:3",
+            name: bus3
+        }
+        ];
     }
     const apiKey = 'AIzaSyA8UuMACOY60siOk58pGAyDzmyjhzIOGYk';
     destination = '38.280435015240556,21.768746092828305';
@@ -132,12 +227,12 @@
         }
     }
 
-    async function getStationLastUpdate(clickedElement) {
+    async function getStationLastUpdate(stationId) {
         try {
-            const response = await fetch('http://localhost:3000/getStationInfo');
+            const response = await fetch(`http://localhost:3000/getStationInfo?stationid=${stationId}`);
             const data = await response.json();
 
-            document.getElementById("info").innerText = "Last bus seen: "+data.bus+"\nAt: "+data.time
+            document.getElementById("info").innerText = "Last bus seen: " + data.bus + "\nAt: " + data.time;
         } catch (error) {
             console.error('Error fetching location:', error.message);
         }
@@ -173,40 +268,56 @@
     }
 
     // Function to get the user's location
-function getUserLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(showPosition, showError);
-    } else {
-        alert("Geolocation is not supported by this browser.");
+    function getUserLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition, showError);
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
     }
-}
 
-function showPosition(position) {
-    var latitude = position.coords.latitude;
-    var longitude = position.coords.longitude;
-    origin= `${latitude},${longitude}`;
-    console.log("origin ",origin)
-    console.log("destination ",destination)
-    gettime_directions(origin);
-    alert("Your location is: " + latitude + ", " + longitude);
-}
-
-function showError(error) {
-    switch (error.code) {
-        case error.PERMISSION_DENIED:
-            alert("User denied the request for Geolocation.");
-            break;
-        case error.POSITION_UNAVAILABLE:
-            alert("Location information is unavailable.");
-            break;
-        case error.TIMEOUT:
-            alert("The request to get user location timed out.");
-            break;
-        case error.UNKNOWN_ERROR:
-            alert("An unknown error occurred.");
-            break;
+    function showPosition(position) {
+        var latitude = position.coords.latitude;
+        var longitude = position.coords.longitude;
+        origin= `${latitude},${longitude}`;
+        console.log("origin ",origin)
+        console.log("destination ",destination)
+        gettime_directions(origin);
+        alert("Your location is: " + latitude + ", " + longitude);
     }
-}
+
+    
+    socket.on('busupdate', busdata => {
+        busdata.forEach(bus => {
+            console.log("bus.location ",bus.location);
+            console.log("bus.location ",bus.location);
+            index = buses1.findIndex(entry => entry.id === bus.id);
+            console.log("index ", index);
+            buses1.forEach(entry => {
+                console.log("entry.id", entry.id, typeof entry.id);
+            });
+            console.log("bus.id", bus.id, typeof bus.id);
+            (buses1[index].name).setPosition(new google.maps.LatLng(bus.location.lat, bus.location.lng));
+        });
+    });
+    
+
+    function showError(error) {
+        switch (error.code) {
+            case error.PERMISSION_DENIED:
+                alert("User denied the request for Geolocation.");
+                break;
+            case error.POSITION_UNAVAILABLE:
+                alert("Location information is unavailable.");
+                break;
+            case error.TIMEOUT:
+                alert("The request to get user location timed out.");
+                break;
+            case error.UNKNOWN_ERROR:
+                alert("An unknown error occurred.");
+                break;
+        }
+    }
   </script>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA8UuMACOY60siOk58pGAyDzmyjhzIOGYk&callback=initMap&libraries=places,geometry&solution_channel=GMP_QB_commutes_v2_c" async defer></script>
   </html>
