@@ -154,6 +154,8 @@ const buses = [
 ];
 let stationData = [];
 let violations = [];
+let congestions = [];
+let busdata = [];
 
 const updateStationData = async () => {
     try {
@@ -188,15 +190,48 @@ const updateStationData = async () => {
 
 updateStationData();
 
-/* app.get('/getStationInfo', async (req, res) => {
-    res.json(stationData);
-}); */
+const updateBusData = async () => {
+    try {
+        busdata = await Promise.all(buses.map(async (bus) => {
+            const congestedid = await readEntityAttribute(bus.id, 'crowdFlowObserved');
+            const locationData = await readEntityAttribute(bus.id, 'location');
+            return {
+                id: bus.id,
+                location: locationData.coordinates,
+                peopleCount: await readEntityAttribute(congestedid, 'peopleCount'),
+                congested: await readEntityAttribute(congestedid, 'congested'),
+                route: await readEntityAttribute(bus.id, 'serviceStatus')
+            };
+        }));
+
+        const filteredbuss = busdata.filter(bus => bus.congested === true && !congestions.includes(bus.id));
+        const removebuss = busdata.filter(bus => bus.congested === false && congestions.includes(bus.id));
+        congestions = congestions.filter(e => {
+            CongestionStopped(bus.id);
+            !removebuss.map(bus => bus.id).includes(e);
+        });
+
+        filteredbuss.forEach(bus => {
+            CongestedAllert(bus.id);
+            congestions.push(bus.id);
+        });
+
+    } catch (error) {
+        console.error('Error updating station data:', error.message);
+    }
+};
+
+
+updateBusData();
+
+app.get('/getBusInfo', async (req, res) => {
+    res.json(busdata);
+});
+
+
 
 io.on('connection', (socket) => {
     console.log('Client connected');
-    /* socket.on('update', (data) => {
-        console.log('Received update:', data);
-    }); */
 
     setInterval(() => {
         updateStationData(); 
@@ -204,15 +239,8 @@ io.on('connection', (socket) => {
     }, 6000);
 
     setInterval(() => {
-        const randomStationIndex = Math.floor(Math.random() * buses.length);
-        const bus = buses[randomStationIndex];
-
-        const busdata = {
-            busName: bus.name,
-            attributeValues: {lgn: Math.floor(Math.random() * 100),lat: Math.floor(Math.random() * 100)}, 
-            entityAttribute: "location"
-        };
-        socket.emit('buslocation', busdata);
+        updateBusData();
+        socket.emit('busupdate', busdata);
     }, 3000);
 
     socket.on('disconnect', () => {

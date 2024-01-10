@@ -87,7 +87,9 @@
     </table>
 
         <script>
-            const socket = io('http://127.0.0.1:8080');
+            const socket = io('http://127.0.0.1:8080', {
+                transports: ['websocket', 'polling'],
+            });
             var map;
             var bus1;
             function initMap() {
@@ -110,7 +112,8 @@
                     }
                 });
                 bus1 = new google.maps.Marker({
-                    position: { lat: 38.25131035681778, lng: 21.742257624039638 },
+                    id: "urn:ngsi-ld:Vehicle:vehicle:WasteManagement:1",
+                    position: { lat: 38.24781910822103,lng: 21.737767737314154},
                     map: map,
                     title: 'Bus 1',
                     icon: {
@@ -119,28 +122,30 @@
                     }
                 });
                 bus2 = new google.maps.Marker({
-                    position: { lat: 38.25373741551049,lng:  21.744804670825435},
+                    id: "urn:ngsi-ld:Vehicle:vehicle:WasteManagement:2",
+                    position: { lat: 38.25005986475536,lng:  21.740551357339115},
                     map: map,
-                    title: 'Bus 2',
+                    title: 'Bus 1',
                     icon: {
                         url: 'bus.png',
                         scaledSize: markerSize
                     }
                 });
                 bus3 = new google.maps.Marker({
-                    position: { lat: 38.25771395542237,lng:  21.748066236988812},
+                    id: "urn:ngsi-ld:Vehicle:vehicle:WasteManagement:3",
+                    position: { lat: 38.2550049442128,lng: 21.742603234909094},
                     map: map,
-                    title: 'Bus 3',
+                    title: 'Bus 1',
                     icon: {
                         url: 'bus.png',
                         scaledSize: markerSize
                     }
                 });
                 bus1.addListener('click', function () {
-                    getbusLastUpdate();
-                    var contentString = '<div id="content1">' +
-                        '<h6 id="firstHeading1" class="firstHeading">Bus 1: Zaimi</h6>' +
-                        '<p id ="info1"></p>' +
+                    getbusLastUpdate("urn:ngsi-ld:Vehicle:vehicle:WasteManagement:1");
+                    var contentString = '<div id="content">' +
+                        '<h6 id="firstHeading" class="firstHeading">Bus 1: Zaimi</h6>' +
+                        '<p id ="info"></p>' +
                         '</div>';
 
                     // Set the content and open the info window
@@ -148,32 +153,48 @@
                     infoWindow.open(map, bus1);
                 });
                 bus2.addListener('click', function () {
-                    getbusLastUpdate();
-                    var contentString = '<div id="content2">' +
-                        '<h6 id="firstHeading1" class="firstHeading">Bus 2: Zaimi</h6>' +
-                        '<p id ="info2"></p>' +
+                    getbusLastUpdate("urn:ngsi-ld:Vehicle:vehicle:WasteManagement:2");
+                    var contentString = '<div id="content">' +
+                        '<h6 id="firstHeading" class="firstHeading">Bus 2: Zaimi</h6>' +
+                        '<p id ="info"></p>' +
                         '</div>';
 
                     infoWindow.setContent(contentString);
                     infoWindow.open(map, bus2);
                 });
                 bus3.addListener('click', function () {
-                    getbusLastUpdate();
-                    var contentString = '<div id="content3">' +
-                        '<h6 id="firstHeading1" class="firstHeading">Bus 3: Zaimi</h6>' +
-                        '<p id ="info3"></p>' +
+                    getbusLastUpdate("urn:ngsi-ld:Vehicle:vehicle:WasteManagement:3");
+                    var contentString = '<div id="content">' +
+                        '<h6 id="firstHeading" class="firstHeading">Bus 3: Zaimi</h6>' +
+                        '<p id ="info"></p>' +
                         '</div>';
 
                     infoWindow.setContent(contentString);
                     infoWindow.open(map, bus3);
                 });
+                buses = [
+                    {
+                        //route: route1,
+                        name: bus1
+                    },
+                    {
+                        //route: route1,
+                        name: bus2
+                    },
+                    {
+                        //route: route3,
+                        name: bus3
+                    }
+                ];
             }
-            async function getbusLastUpdate(clickedElement) {
+            async function getbusLastUpdate(busid) {
                 try {
-                    const response = await fetch('http://localhost:3000/getBusInfo');
+                    const response = await fetch('http://localhost:8080/getBusInfo');
                     const data = await response.json();
 
-                    document.getElementById("info").innerText = "Last station: " + data.station + "\nAt: " + data.time + "\nPeople Count: " + data.peoplecount;
+                    Index = data.findIndex(entry => entry.id === busid);
+                    console.log(data[Index].peopleCount);
+                    document.getElementById("info").innerText = "People Count: " + data[Index].peopleCount;
                 } catch (error) {
                     console.error('Error fetching location:', error.message);
                 }
@@ -273,10 +294,27 @@
 
             });
 
-            socket.on('buslocation', busdata => {
-                console.log("busdata.location ",busdata.attributeValues);
-                bus1.setPosition(new google.maps.LatLng(busdata.attributeValues.lat, busdata.attributeValues.lng));
+            socket.on('busupdate', busdata => {
+                try {
+                    busdata.forEach(bus => {
+                        console.log("bus.location ",bus.location);
+                        index = buses.findIndex(entry => entry.name.id === bus.id);
+                        console.log("index ", index);
+                        buses.forEach(entry => {
+                            console.log("entry.name.id", entry.name.id, typeof entry.name.id);
+                        });
+                        console.log("bus.id", bus.id, typeof bus.id);
+                        //(buses[index].name).setPosition(new google.maps.LatLng(bus.location.lat, bus.location.lng));
+                    });
+                } catch (error) {
+                    console.error('Error handling busupdate:', error);
+                }
             });
+        socket.on('connect_error', (error) => {
+            console.error('Socket connection error:', error);
+        });
+
+
         </script>
         
         <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA8UuMACOY60siOk58pGAyDzmyjhzIOGYk&callback=initMap&libraries=places,geometry&solution_channel=GMP_QB_commutes_v2_c" async defer></script>
