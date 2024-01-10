@@ -18,7 +18,6 @@ const dataSchema = new mongoose.Schema({
 const DataModel = mongoose.model('Data', dataSchema);
 
 // Define a route to get data from MongoDB
-
 const readDataByTime = async(req, res, entityId, initYear, initMonth, initDay, initHour, initMinute, initSecond,
   endYear, endMonth, endDay, endHour, endMinute, endSecond, tz_offset) => {
   try {
@@ -63,6 +62,8 @@ const readDataByTime = async(req, res, entityId, initYear, initMonth, initDay, i
   // Read entity attribute
   app.get('/getDataByTime', async (req, res) => {
     try {
+      // Add code to choose CrowdFlowObserved ID based on bus station
+
       const data = await readDataByTime(
         req,
         res,
