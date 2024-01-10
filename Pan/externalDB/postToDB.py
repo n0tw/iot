@@ -276,6 +276,11 @@ response = requests.post(
     json={"data": crowdFlowObservedData}
 )
 
+response = requests.post(
+    f"{base_url}/entity/{cFOid}/Version%2",
+    json={"data": crowdFlowObservedData}
+)
+
 # response = requests.get(
 #    f"http://localhost:5000/entities_by_time/{cFOid}/CrowdFlowObserved/{2018}/{3}/{11}/{15}/{31}/{2}/{2023}/{4}/{5}/{1}/{5}/{2}/{tz_offset}"
 # )

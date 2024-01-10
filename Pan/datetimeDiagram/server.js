@@ -44,36 +44,6 @@ const readDataByTime = async(req, res, entityId, entityType, initYear, initMonth
     const xValues = allEntries.map(entry => entry.dateObserved.value['@value']);
     const yValues = allEntries.map(entry => entry.peopleCount.value);
 
-
-    // Create a simple line chart using Chart.js
-    // const canvasRenderService = new ChartJSNodeCanvas({ width: 800, height: 400 });
-    // const configuration = {
-    //   type: 'line',
-    //   data: {
-    //     labels: xValues,
-    //     datasets: [{
-    //       label: 'Data Values',
-    //       data: yValues,
-    //       borderColor: 'rgb(75, 192, 192)',
-    //       borderWidth: 2,
-    //       fill: false,
-    //     }],
-    //   },
-    //   options: {
-    //     responsive: false,
-    //     scales: {
-    //       x: {
-    //         type: 'linear',
-    //         position: 'bottom',
-    //       },
-    //     },
-    //   },
-    // };
-
-    // const image = await canvasRenderService.renderToBuffer(configuration);
-    // res.set('Content-Type', 'image/png');
-    // res.send(image);
-
     // Send the data as JSON
     res.json({xValues, yValues});
   } catch (error) {
