@@ -84,10 +84,11 @@ class EntityResource(Resource):
         # Delete the entity in the MongoDB collection
         json_doc = json.loads(json_util.dumps(existing_entity))
         return jsonify({'message': f'Entity with ID {entity_id} and version {version} deleted', 'data': json_doc})
-    
 
+
+# Method only for CrowdFlowObserved
 class EntitiesByTimeResource(Resource):
-    def get(self, entityId, entityType, initYear, initMonth, initDay, initHour, initMinute, initSecond,
+    def get(self, entityId, initYear, initMonth, initDay, initHour, initMinute, initSecond,
             endYear, endMonth, endDay, endHour, endMinute, endSecond, tz_offset):
         tz = timezone(timedelta(minutes=tz_offset))
         # Similar to your existing logic for retrieving data by time
@@ -96,138 +97,177 @@ class EntitiesByTimeResource(Resource):
         data=[]
         try:
             # Bulk request for entity CrowdFlowObserved
-            if entityType == "CrowdFlowObserved":
-                for existing_entity in collection.find({
-                                                    "dateObserved.value.@value": {
-                                                        "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                            initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
-                                                        "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                            endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
-                                                    },
-                                                    "id": entityId
-                                                    }):
-                    data.append(existing_entity)
+            for existing_entity in collection.find({
+                                                "dateObserved.value.@value": {
+                                                    "$gte": dt.datetime(initYear, initMonth, initDay, 
+                                                                        initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+                                                    "$lt": dt.datetime(endYear, endMonth, endDay, 
+                                                                        endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
+                                                },
+                                                "id": entityId
+                                                }):
+                data.append(existing_entity)
 
-                if len(list(collection.find({
-                                        "dateObserved.value.@value": {
-                                            "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
-                                            "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
-                                        },
-                                        "id": entityId
-                                        }
-                                        ))) == 0:
-                    return jsonify({'message': f'Entity with ID {entityId} or specific DateTime values not found'}), 404
+            if len(list(collection.find({
+                                    "dateObserved.value.@value": {
+                                        "$gte": dt.datetime(initYear, initMonth, initDay, 
+                                                            initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+                                        "$lt": dt.datetime(endYear, endMonth, endDay, 
+                                                            endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
+                                    },
+                                    "id": entityId
+                                    }
+                                    ))) == 0:
+                return jsonify({'message': f'Entity with ID {entityId} or specific DateTime values not found'}), 404
             
-            # Bulk request for entity TrafficViolation
-            elif entityType == "TrafficViolation":
-                for existing_entity in collection.find({
-                                                    "observationDateTime.value.@value": {
-                                                        "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                            initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
-                                                        "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                            endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
-                                                    },
-                                                    "id": entityId
-                                                    }):
-                    data.append(existing_entity)
-                
-                if len(list(collection.find({
-                                        "observationDateTime.value.@value": {
-                                            "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
-                                            "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
-                                        },
-                                        "id": entityId
-                                        }
-                                        ))) == 0:
-                    return jsonify({'message': f'Entity with ID {entityId} or specific DateTime values not found'}), 404
-            
-            # Bulk request for entity TransportStation
-            elif entityType == "TransportStation":
-                # Search by dateLastReported
-                for existing_entity in collection.find({
-                                                    "dateLastReported.value": {
-                                                        "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                            initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
-                                                        "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                            endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
-                                                    },
-                                                    "id": entityId
-                                                    }):
-                    data.append(existing_entity)
-                
-                # Search by dateObserved
-                for existing_entity2 in collection.find({
-                                                    "dateObserved.value": {
-                                                        "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                            initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
-                                                        "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                            endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
-                                                    },
-                                                    "id": entityId
-                                                    }):
-                    data.append(existing_entity2)
-
-                if (len(list(collection.find({
-                                        "dateLastReported.value": {
-                                            "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
-                                            "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
-                                        },
-                                        "id": entityId
-                                        }
-                                        ))) == 0) and (len(list(collection.find({
-                                        "dateObserved.value": {
-                                            "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
-                                            "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
-                                        },
-                                        "id": entityId
-                                        }
-                                        )))) == 0:
-                    return jsonify({'message': f'Entity with ID {entityId} or specific DateTime values not found'}), 404
-            
-            # Bulk request for entity Vehicle
-            elif entityType == "Vehicle":
-                for existing_entity in collection.find({
-                                                    "observationDateTime.value.@value": {
-                                                        "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                            initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
-                                                        "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                            endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
-                                                    },
-                                                    "id": entityId
-                                                    }):
-                    data.append(existing_entity)
-
-                if len(list(collection.find({
-                                        "observationDateTime.value.@value": {
-                                            "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                                initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
-                                            "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                                endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
-                                        },
-                                        "id": entityId
-                                        }
-                                        ))) == 0:
-                    return jsonify({'message': f'Entity with ID {entityId} or specific DateTime values not found'}), 404
-                
-            else: 
-                return jsonify({'message': 'Error: Wrong type'}), 400
             return jsonify({'message': f'Entity with ID {entityId} received', 'data': json.loads(json_util.dumps(data))})
         
         except Exception as e:
             print(f"Error: {str(e)}")
             return jsonify({'message': 'Error occurred during get'}), 500
 
+# class EntitiesByTimeResource(Resource):
+#     def get(self, entityId, entityType, initYear, initMonth, initDay, initHour, initMinute, initSecond,
+#             endYear, endMonth, endDay, endHour, endMinute, endSecond, tz_offset):
+#         tz = timezone(timedelta(minutes=tz_offset))
+#         # Similar to your existing logic for retrieving data by time
+#         # ...
+#         # Get the MongoDB collection
+#         data=[]
+#         try:
+#             # Bulk request for entity CrowdFlowObserved
+#             if entityType == "CrowdFlowObserved":
+#                 for existing_entity in collection.find({
+#                                                     "dateObserved.value.@value": {
+#                                                         "$gte": dt.datetime(initYear, initMonth, initDay, 
+#                                                                             initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+#                                                         "$lt": dt.datetime(endYear, endMonth, endDay, 
+#                                                                             endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
+#                                                     },
+#                                                     "id": entityId
+#                                                     }):
+#                     data.append(existing_entity)
+
+#                 if len(list(collection.find({
+#                                         "dateObserved.value.@value": {
+#                                             "$gte": dt.datetime(initYear, initMonth, initDay, 
+#                                                                 initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+#                                             "$lt": dt.datetime(endYear, endMonth, endDay, 
+#                                                                 endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
+#                                         },
+#                                         "id": entityId
+#                                         }
+#                                         ))) == 0:
+#                     return jsonify({'message': f'Entity with ID {entityId} or specific DateTime values not found'}), 404
+            
+#             # Bulk request for entity TrafficViolation
+#             elif entityType == "TrafficViolation":
+#                 for existing_entity in collection.find({
+#                                                     "observationDateTime.value.@value": {
+#                                                         "$gte": dt.datetime(initYear, initMonth, initDay, 
+#                                                                             initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+#                                                         "$lt": dt.datetime(endYear, endMonth, endDay, 
+#                                                                             endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
+#                                                     },
+#                                                     "id": entityId
+#                                                     }):
+#                     data.append(existing_entity)
+                
+#                 if len(list(collection.find({
+#                                         "observationDateTime.value.@value": {
+#                                             "$gte": dt.datetime(initYear, initMonth, initDay, 
+#                                                                 initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+#                                             "$lt": dt.datetime(endYear, endMonth, endDay, 
+#                                                                 endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
+#                                         },
+#                                         "id": entityId
+#                                         }
+#                                         ))) == 0:
+#                     return jsonify({'message': f'Entity with ID {entityId} or specific DateTime values not found'}), 404
+            
+#             # Bulk request for entity TransportStation
+#             elif entityType == "TransportStation":
+#                 # Search by dateLastReported
+#                 for existing_entity in collection.find({
+#                                                     "dateLastReported.value": {
+#                                                         "$gte": dt.datetime(initYear, initMonth, initDay, 
+#                                                                             initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+#                                                         "$lt": dt.datetime(endYear, endMonth, endDay, 
+#                                                                             endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
+#                                                     },
+#                                                     "id": entityId
+#                                                     }):
+#                     data.append(existing_entity)
+                
+#                 # Search by dateObserved
+#                 for existing_entity2 in collection.find({
+#                                                     "dateObserved.value": {
+#                                                         "$gte": dt.datetime(initYear, initMonth, initDay, 
+#                                                                             initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+#                                                         "$lt": dt.datetime(endYear, endMonth, endDay, 
+#                                                                             endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
+#                                                     },
+#                                                     "id": entityId
+#                                                     }):
+#                     data.append(existing_entity2)
+
+#                 if (len(list(collection.find({
+#                                         "dateLastReported.value": {
+#                                             "$gte": dt.datetime(initYear, initMonth, initDay, 
+#                                                                 initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+#                                             "$lt": dt.datetime(endYear, endMonth, endDay, 
+#                                                                 endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
+#                                         },
+#                                         "id": entityId
+#                                         }
+#                                         ))) == 0) and (len(list(collection.find({
+#                                         "dateObserved.value": {
+#                                             "$gte": dt.datetime(initYear, initMonth, initDay, 
+#                                                                 initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+#                                             "$lt": dt.datetime(endYear, endMonth, endDay, 
+#                                                                 endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
+#                                         },
+#                                         "id": entityId
+#                                         }
+#                                         )))) == 0:
+#                     return jsonify({'message': f'Entity with ID {entityId} or specific DateTime values not found'}), 404
+            
+#             # Bulk request for entity Vehicle
+#             elif entityType == "Vehicle":
+#                 for existing_entity in collection.find({
+#                                                     "observationDateTime.value.@value": {
+#                                                         "$gte": dt.datetime(initYear, initMonth, initDay, 
+#                                                                             initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+#                                                         "$lt": dt.datetime(endYear, endMonth, endDay, 
+#                                                                             endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
+#                                                     },
+#                                                     "id": entityId
+#                                                     }):
+#                     data.append(existing_entity)
+
+#                 if len(list(collection.find({
+#                                         "observationDateTime.value.@value": {
+#                                             "$gte": dt.datetime(initYear, initMonth, initDay, 
+#                                                                 initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+#                                             "$lt": dt.datetime(endYear, endMonth, endDay, 
+#                                                                 endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
+#                                         },
+#                                         "id": entityId
+#                                         }
+#                                         ))) == 0:
+#                     return jsonify({'message': f'Entity with ID {entityId} or specific DateTime values not found'}), 404
+                
+#             else: 
+#                 return jsonify({'message': 'Error: Wrong type'}), 400
+#             return jsonify({'message': f'Entity with ID {entityId} received', 'data': json.loads(json_util.dumps(data))})
+        
+#         except Exception as e:
+#             print(f"Error: {str(e)}")
+#             return jsonify({'message': 'Error occurred during get'}), 500
+
 
 api.add_resource(EntityResource, '/entity/<string:entity_id>/<string:version>')
-api.add_resource(EntitiesByTimeResource, '/entities_by_time/<string:entityId>/<string:entityType>/<int:initYear>/<int:initMonth>/<int:initDay>/<int:initHour>/<int:initMinute>/<int:initSecond>/<int:endYear>/<int:endMonth>/<int:endDay>/<int:endHour>/<int:endMinute>/<int:endSecond>/<int:tz_offset>')
+api.add_resource(EntitiesByTimeResource, '/entities_by_time/<string:entityId>/<int:initYear>/<int:initMonth>/<int:initDay>/<int:initHour>/<int:initMinute>/<int:initSecond>/<int:endYear>/<int:endMonth>/<int:endDay>/<int:endHour>/<int:endMinute>/<int:endSecond>/<int:tz_offset>')
 api.add_resource(EntityResourceMultipleInstances, '/entities/<string:entity_id>')
     
 if __name__ == '__main__':

@@ -19,11 +19,11 @@ const DataModel = mongoose.model('Data', dataSchema);
 
 // Define a route to get data from MongoDB
 
-const readDataByTime = async(req, res, entityId, entityType, initYear, initMonth, initDay, initHour, initMinute, initSecond,
+const readDataByTime = async(req, res, entityId, initYear, initMonth, initDay, initHour, initMinute, initSecond,
   endYear, endMonth, endDay, endHour, endMinute, endSecond, tz_offset) => {
   try {
     // Make an HTTP request to your Flask API endpoint
-    const response = await axios.get(`http://localhost:5000/entities_by_time/${entityId}/${entityType}/${initYear}/${initMonth}/${initDay}/${initHour}/${initMinute}/${initSecond}/${endYear}/${endMonth}/${endDay}/${endHour}/${endMinute}/${endSecond}/${tz_offset}`);
+    const response = await axios.get(`http://localhost:5000/entities_by_time/${entityId}/${initYear}/${initMonth}/${initDay}/${initHour}/${initMinute}/${initSecond}/${endYear}/${endMonth}/${endDay}/${endHour}/${endMinute}/${endSecond}/${tz_offset}`);
 
     // Retrieve data from the Flask API response
     const responseData = response.data;
@@ -67,7 +67,6 @@ const readDataByTime = async(req, res, entityId, entityType, initYear, initMonth
         req,
         res,
         "urn:ngsi-ld:CrowdFlowObserved:Valladolid_1",
-        "CrowdFlowObserved",
         2018,3,11,15,31,2,2023,4,5,1,5,2,0
         );
     } catch (error) {
