@@ -21,6 +21,7 @@ app.use(cors({
 }));
 
 const transporter = nodemailer.createTransport({
+    pool: true,
     service: 'hotmail',
     auth: {
       user: 'evgenia.123@hotmail.com',
@@ -51,34 +52,44 @@ const readEntityAttribute = async (entityId, attributeName) => {
       return null;
     }
 };
-
-const monitorAttribute = async (id) => {
+const monitorAttribute = async (stationids) => {
+    let text='';
     try {
-        const observationDateTime = await readEntityAttribute(id, 'observationDateTime');
-        const vehiclePlate = await readEntityAttribute(id, 'vehiclePlate');
-        const transportStation = await readEntityAttribute(id, 'transportStation');
+        // Use Promise.all to wait for all attribute fetching operations
+        await Promise.all(stationids.map(async (id) => {
+            try {
+                const observationDateTime = await readEntityAttribute(await readEntityAttribute(id, 'trafficViolation'), 'observationDateTime');
+                const vehiclePlate = await readEntityAttribute(await readEntityAttribute(id, 'trafficViolation'), 'vehiclePlate');
+                const transportStation = await readEntityAttribute(id, 'name');
+
+                text = text + `Illegal parking detected in ${transportStation} at ${observationDateTime['@value']}. The vehicle of interest has the following plate number: ${vehiclePlate}.\n\n`;
+            } catch (attributeError) {
+                console.error(`Error fetching attributes for station ${id}:`, attributeError);
+                // Handle or log the error as needed
+            }
+        }));
 
         const mailOptions = {
             from: 'evgenia.123@hotmail.com',
             to: 'evgenia.123@hotmail.com',
             subject: 'Illegal parking in bus station',
-            text: `Illegal parking detected in ${transportStation} at ${observationDateTime['@value']}. The vehicle of interest has the following plate number: ${vehiclePlate}.`,
+            text: text,
         };
 
-        // Send email
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-            console.error('Error sending email:', error);
-            } else {
-            console.log('Email sent:', info.response);
-            violations.push(filteredStations)
-            }
-        });
+        setTimeout(() => {
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    console.error('Error sending email:', error);
+                } else {
+                    console.log('Email sent:', info.response);
+                    violations.push(filteredStations);
+                }
+            });
+        }, 10000);
     } catch (error) {
         console.error('Error monitoring attribute:', error);
     }
 };
-
 
 app.post('/notification-endpoint', async (req, res) => {
     console.log('Received notification:', req.body);
@@ -163,10 +174,12 @@ const updateStationData = async () => {
         const removeStations = stationData.filter(station => station.illparkingid === '-' && violations.includes(station.id));
         violations = violations.filter(e => !removeStations.map(station => station.id).includes(e));
 
+        
         filteredStations.forEach(station => {
-            monitorAttribute(station.illparkingid);
             violations.push(station.id);
         });
+        monitorAttribute(violations);
+
     } catch (error) {
         console.error('Error updating station data:', error.message);
     }
@@ -175,15 +188,15 @@ const updateStationData = async () => {
 
 updateStationData();
 
-app.get('/getStationInfo', async (req, res) => {
+/* app.get('/getStationInfo', async (req, res) => {
     res.json(stationData);
-});
+}); */
 
 io.on('connection', (socket) => {
     console.log('Client connected');
-    socket.on('update', (data) => {
+    /* socket.on('update', (data) => {
         console.log('Received update:', data);
-    });
+    }); */
 
     setInterval(() => {
         updateStationData(); 
