@@ -92,6 +92,7 @@
             });
             var map;
             var bus1;
+            //var program = document.getElementById('program');
             function initMap() {
                 console.log('Map initialized');
                 map = new google.maps.Map(document.getElementById('map'), {
@@ -144,7 +145,7 @@
                 bus1.addListener('click', function () {
                     getbusLastUpdate("urn:ngsi-ld:Vehicle:vehicle:WasteManagement:1");
                     var contentString = '<div id="content">' +
-                        '<h6 id="firstHeading" class="firstHeading">Bus 1: Zaimi</h6>' +
+                        '<h6 id="firstHeading" class="firstHeading">Bus 1</h6>' +
                         '<p id ="info"></p>' +
                         '</div>';
 
@@ -155,7 +156,7 @@
                 bus2.addListener('click', function () {
                     getbusLastUpdate("urn:ngsi-ld:Vehicle:vehicle:WasteManagement:2");
                     var contentString = '<div id="content">' +
-                        '<h6 id="firstHeading" class="firstHeading">Bus 2: Zaimi</h6>' +
+                        '<h6 id="firstHeading" class="firstHeading">Bus 2</h6>' +
                         '<p id ="info"></p>' +
                         '</div>';
 
@@ -165,7 +166,7 @@
                 bus3.addListener('click', function () {
                     getbusLastUpdate("urn:ngsi-ld:Vehicle:vehicle:WasteManagement:3");
                     var contentString = '<div id="content">' +
-                        '<h6 id="firstHeading" class="firstHeading">Bus 3: Zaimi</h6>' +
+                        '<h6 id="firstHeading" class="firstHeading">Bus 3</h6>' +
                         '<p id ="info"></p>' +
                         '</div>';
 
@@ -194,7 +195,7 @@
 
                     Index = data.findIndex(entry => entry.id === busid);
                     console.log(data[Index].peopleCount);
-                    document.getElementById("info").innerText = "People Count: " + data[Index].peopleCount;
+                    document.getElementById("info").innerText = "ID:"+ data[Index].id+"\nPeople Count: " + data[Index].peopleCount;
                 } catch (error) {
                     console.error('Error fetching location:', error.message);
                 }
@@ -300,10 +301,19 @@
                         console.log("bus.location ",bus.location);
                         index = buses.findIndex(entry => entry.name.id === bus.id);
                         console.log("index ", index);
-                        buses.forEach(entry => {
-                            console.log("entry.name.id", entry.name.id, typeof entry.name.id);
-                        });
+                        congested = bus.congested;
                         console.log("bus.id", bus.id, typeof bus.id);
+                        if(congested===false){
+                            tableBody = document.getElementById('table-body');
+                            const newRow = tableBody.insertRow(0);
+                            const cell1 = newRow.insertCell(0);
+                            const cell2 = newRow.insertCell(1);
+                            cell1.textContent =bus.id;
+                            cell2.textContent = "congested";
+                            if (tableBody.rows.length==10){
+                                tableBody.deleteRow(-1);
+                            }
+                        }
                         //(buses[index].name).setPosition(new google.maps.LatLng(bus.location.lat, bus.location.lng));
                     });
                 } catch (error) {
