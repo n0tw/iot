@@ -26,7 +26,7 @@ print("supervision", sv.__version__)
 
 """## Download data"""
 
-SUBWAY_VIDEO_PATH = "iot_bus.mp4"
+SUBWAY_VIDEO_PATH = "C:/Users/eugk/Documents/iot/project/iot_bus.mp4"
 
 from ultralytics import YOLO
 model = YOLO('yolov8s.pt')
@@ -38,6 +38,8 @@ import requests
 import pandas as pd
 import threading
 import time
+import random
+import queue
 
 video_info = sv.VideoInfo.from_video_path(SUBWAY_VIDEO_PATH)
 print("video_info", video_info)
@@ -57,6 +59,8 @@ max=0
 
 z_1 = [False]
 m=0
+max_people = 0
+processing_video = False 
 
 def send_data(max_value, locations):
     edge_controller_url = "http://edge-controller-url" 
@@ -66,6 +70,18 @@ def send_data(max_value, locations):
         response = requests.post(edge_controller_url, json=data)
         response.raise_for_status()
         print("Data sent successfully.")
+    except requests.exceptions.RequestException as e:
+        print(f"Error sending data: {e}")
+
+def send_to_station(max_value, locations):
+    station_url = "http://station-url" 
+    data = {"max_value": max_value, "locations": locations}
+    
+    try:
+        response = requests.post(station_url, json=data)
+        response.raise_for_status()
+        print("Data sent successfully.")
+
     except requests.exceptions.RequestException as e:
         print(f"Error sending data: {e}")
 
@@ -83,10 +99,11 @@ def read_locations(file_path, start_row=None, end_row=None, skip_value=None):
             df1 = df1[~df1.iloc[:, 0].apply(lambda x: str(x) == str(skip_value))]
         
         locations = df.to_dict(orient='records')
-        
+        stations = df1.to_dict(orient='records')
+
         if not df.empty:
             if not df1.empty:
-                return locations, True
+                return locations, stations
             else:
                 return locations, False
         else:
@@ -144,35 +161,46 @@ if not cap.isOpened():
     print("Error: Could not open video.")
     exit()
 
-exit_flag = threading.Event()  # Event to signal threads to exit
-
-update_locations_event = threading.Event()
+def faker(station):
+    random_integer = random.randint(1, 30)
+    print(station)
+    print(random_integer)
 
 
 def start_video():
-    print("A")
-    """ while not exit_flag.is_set():
+    cap = cv2.VideoCapture(SUBWAY_VIDEO_PATH)
+    global processing_video, max_people
+
+    if not cap.isOpened():
+        print("Error: Could not open video.")
+        return
+
+    while processing_video:
         ret, frame = cap.read()
 
         if not ret:
             print("Video has ended.")
             break
 
-        # Process the frame using the process_frame function
-        processed_frame, max_value = process_frame(frame, None)
+        processed_frame, max_people = process_frame(frame, None)
 
-        # Check if the user pressed 'q' to exit the loop (you can change this condition)
+        cv2.imshow("Video", processed_frame)
+
+        # Check if the user pressed 'q' to exit the loop
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
- """
+    print(max_people)
+    cap.release()
+    cv2.destroyAllWindows()
+
+
 def update_locations():
-    global row
+    global row, processing_video
     row = 1
     end_row = 123
 
     while row <= end_row:
         excel_file_path = "Routes.xlsx"
-        print("row", row)
         result = read_locations(
             file_path=excel_file_path,
             start_row=row,
@@ -181,28 +209,37 @@ def update_locations():
         )
         
         if result is not None:
-            locations, videostart = result
+            locations, station = result
             print(locations)
             
-            if videostart:
-                start_video()
+            if station:
+                if station == [{'Stations': 'Ermou'}]:
+                    print(station)
+                    processing_video = True
+
+                    # Start video processing thread
+                    video_thread = threading.Thread(target=start_video)
+                    video_thread.start()
+
+                    # Wait for the video processing thread to finish
+                    video_thread.join()
+
+                    processing_video = False
+                else:
+                    faker(station)
             
             row += 1
         else:
             print("Error reading locations. Stopping update.")
             break
-        
         time.sleep(3)
 
-
-"""  """
+# Start the location update thread
 locations_thread = threading.Thread(target=update_locations)
 locations_thread.start()
-update_locations_event.set()
-update_locations_event.clear()
 
-exit_flag.set()
-locations_thread.join()
+locations_thread.join() 
 
+# Release video capture and close all windows
 cap.release()
 cv2.destroyAllWindows()
