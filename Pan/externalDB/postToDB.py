@@ -271,14 +271,14 @@ tz_offset = 0
 
 base_url = "http://localhost:5000"
 
-response = requests.post(
-    f"{base_url}/entity/{cFOid}/{cFOversion}",
-    json={"data": crowdFlowObservedData}
-)
+# response = requests.post(
+#     f"{base_url}/entity/{cFOid}/{cFOversion}",
+#     json={"data": crowdFlowObservedData}
+# )
 
 response = requests.post(
-    f"{base_url}/entity/{cFOid}/Version%2",
-    json={"data": crowdFlowObservedData}
+    f"{base_url}/entity/{tSid}/Version%2",
+    json={"data": transportStationData}
 )
 
 # response = requests.get(
