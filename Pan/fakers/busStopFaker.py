@@ -16,6 +16,39 @@ for i in range(1,33):
     crowdFlowObservedIDs.append("urn:ngsi-ld:CrowdFlowObserved:Station:"+str(i))
     transportStationIDs.append("urn:ngsi-ld:Station:Station:"+str(i))
 
+transportStationNames = ["Ermou",
+                        "Agiou Nikolaou",
+                        "Zaimi",
+                        "Old Arsakeio",
+                        "Pyrosvestiou Square",
+                        "Favierou",
+                        "Maratou",
+                        "Kourtesi",
+                        "Fillppa",
+                        "1st Cemetery",
+                        "Anthoupoli",
+                        "OGA",
+                        "Aretha (to University)",
+                        "Aretha",
+                        "Intracom",
+                        "Kotroni",
+                        "Mihaniki Kalliergeia",
+                        "Mihaniki Kalliergeia 2",
+                        "Koridalleos",
+                        "Psistaria",
+                        "Bissarionos",
+                        "Proastio",
+                        "Mandreka",
+                        "Tofalos Stadium",
+                        "Haradros River",
+                        "University of Patras Chancellor's Office",
+                        "Polytechnic",
+                        "Conference Center",
+                        "Physics Department",
+                        "Geology Department",
+                        "Medicine",
+                        "Hospital"]
+
 tSlocations = [ [38.24674692664068, 21.73598679633868],
                 [38.24758985475257, 21.737535367031022],
                 [38.24902222935668, 21.739305624967397],
@@ -55,15 +88,18 @@ values_iterator = itertools.cycle(['5', '20', '15'])
 # Define the endpoint to receive data
 @app.route('/receive_data', methods=['POST'])
 def receive_data():
+    global transportStationNames
+    global transportStationIDs
     try:
         # Get the data from the POST request
         data = request.get_json()
-
+        index = transportStationNames.index(data['stationName'])
         # Set the shared dynamic data based on received data
         set_shared_dynamic_data(data)
+
         # Identify transportStationID with the vehicleID received and post
-        dataToPost = {'id': "TransportStationID", 'vID': "VehicleID", "dtLastReported": datetime.datetime.now().isoformat(), 
-                      'cFOID': None, "dtLastObserved":  None, 'location': data['stationLocation']}
+        dataToPost = {'id': transportStationIDs[index], 'vID': "VehicleID", "dtLastReported": datetime.datetime.now().isoformat(), 
+                      'cFOID': None, "dtLastObserved":  None, 'location': data['stationLocation'], 'name': data['stationName']}
         # Post the received data to the edge controller
         post_to_edge_controller(data)
 
@@ -92,6 +128,7 @@ def post_periodically():
     global values_iterator
     global crowdFlowObservedIDs
     global transportStationIDs
+    global transportStationNames
     global tSlocations
 
     edge_controller_url = 'http://localhost:5000/receive_crowd_data'  # Adjust the URL as needed
@@ -116,7 +153,8 @@ def post_periodically():
                                                             "dtLastReported": None, 
                                                             'cFOID': crowdFlowObservedIDs[j],
                                                             "dtLastObserved":  datetime.datetime.now().isoformat(),
-                                                            'location': tSlocations[j]})
+                                                            'location': tSlocations[j],
+                                                            'name': transportStationNames[j]})
         response2.raise_for_status()
 
 # Schedule the periodic job

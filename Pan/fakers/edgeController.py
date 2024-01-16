@@ -30,9 +30,14 @@ def receive_station_data():
 
         tSid = data['id']
         tSlocation = data['location']
+        tSname = data['name']
         transportStationData= {
             "id": tSid,
             "type": "TransportStation",
+            "name": {
+                "type": "String",
+                "value": tSname
+            },
             "contractingAuthority": {
                 "type": "Property",
                 "value": "Municipality of Patras"
