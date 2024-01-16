@@ -27,11 +27,61 @@ def receive_station_data():
     try:
         # Get the data from the POST request
         data = request.get_json()
-        print(data)
-        # Edit the data (modify as per your requirements)
-        #edited_data = edit_data(data)
 
-        # Post the edited data to another endpoint
+        tSid = data['id']
+        tSlocation = data['location']
+        transportStationData= {
+            "id": tSid,
+            "type": "TransportStation",
+            "contractingAuthority": {
+                "type": "Property",
+                "value": "Municipality of Patras"
+            },
+            "contractingCompany": {
+                "type": "Property",
+                "value": "Urban Transports of Patras S.A."
+            },
+            "location": {
+                "type": "GeoProperty",
+                "value": {
+                    "type": "Point",
+                    "coordinates": tSlocation
+                }
+            },
+            "stationType": {
+                "type": "Property",
+                "value": [
+                    "bus"
+                ]
+            }
+        }
+
+        if(data['vID'] == None):
+            cFOid = data['cFOID']
+            tSdatetimeObserved = data['dtLastObserved']
+            transportStationData['dateObserved'] = {
+                                                   "type": "DateTime",
+                                                   "value": tSdatetimeObserved
+                                                  }
+            transportStationData['crowdFlowObserved'] = {
+                                                        "type": "CrowdFlowObserved",
+                                                        "value": cFOid
+                                                        }
+
+        if(data['cFOID'] == None):
+            vid = data['vID']
+            tSdatetimeReported = data['dtLastReported']
+            transportStationData['dateLastReported'] = {
+                                                       "type": "DateTime",
+                                                       "value": tSdatetimeReported
+                                                       }
+            transportStationData['vehicleLastReported'] = {
+                                                           "type": "Vehicle",
+                                                           "value": vid
+                                                          }
+
+        print(data)
+
         #post_to_endpoint(edited_data, 'https://example.com/other_endpoint')
 
         # Respond to the original request
@@ -45,6 +95,32 @@ def receive_crowd_data():
     try:
         # Get the data from the POST request
         data = request.get_json()
+
+        cFOid = data['id']
+        cFOpc = data['value']
+        cFOdatetime = data['dateObserved']
+        cFObool = False
+        if(int(cFOpc) > 20): cFObool = True
+        # Create payload
+        crowdFlowObservedData = {
+            "id": cFOid,
+            "type": "CrowdFlowObserved",
+            "congested": {
+                "type": "Property",
+                "value": cFObool
+            },
+            "dateObserved": {
+                "type": "Property",
+                "value": {
+                    "@type": "DateTime",
+                    "@value": cFOdatetime
+                }
+            },
+            "peopleCount": {
+                "type": "Property",
+                "value": cFOpc
+            }
+        }
         print(data)
         # Edit the data (modify as per your requirements)
         #edited_data = edit_data(data)
