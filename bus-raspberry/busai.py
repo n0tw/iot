@@ -40,6 +40,19 @@ import threading
 import time
 import random
 import queue
+import sys
+
+ids = sys.argv[1:]
+
+# Check if ids are provided
+if ids:
+    print("Received ids:", ids)
+else:
+    print("No ids provided.")
+    
+crowdflowid = ids[0]
+vehicleid= ids[1]
+
 
 video_info = sv.VideoInfo.from_video_path(SUBWAY_VIDEO_PATH)
 print("video_info", video_info)
@@ -64,7 +77,7 @@ processing_video = False
 
 def send_data(max_value, locations):
     edge_controller_url = "http://edge-controller-url" 
-    data = {"max_value": max_value, "locations": locations}
+    data = {"max_value": max_people+max_value, "locations": locations, "vehicleid":vehicleid, "crowdflowid": crowdflowid}
     
     try:
         response = requests.post(edge_controller_url, json=data)
@@ -73,9 +86,9 @@ def send_data(max_value, locations):
     except requests.exceptions.RequestException as e:
         print(f"Error sending data: {e}")
 
-def send_to_station(max_value, locations):
+def send_to_station(max_value, station_name):
     station_url = "http://station-url" 
-    data = {"max_value": max_value, "locations": locations}
+    data = {"max_value": max_people+max_value, "crowdflowid": crowdflowid, "station": station_name}
     
     try:
         response = requests.post(station_url, json=data)
@@ -103,12 +116,14 @@ def read_locations(file_path, start_row=None, end_row=None, skip_value=None):
 
         if not df.empty:
             if not df1.empty:
-                return locations, stations
+                df2 = pd.read_excel(file_path, usecols=[3], skiprows=skiprows, nrows=nrows)
+                st_loc = df2.to_dict(orient='records')
+                return locations, [stations, st_loc]
             else:
                 return locations, False
         else:
             if start_row + 1<123:
-                print("No valid locations found in row {}. Trying next row.".format(start_row))
+                #print("No valid locations found in row {}. Trying next row.".format(start_row))
                 return read_locations(
                     file_path="Routes.xlsx",
                     start_row=start_row + 1,
@@ -162,7 +177,7 @@ if not cap.isOpened():
     exit()
 
 def faker(station):
-    random_integer = random.randint(1, 30)
+    random_integer = random.randint(-20, 30)
     print(station)
     print(random_integer)
 
@@ -213,7 +228,8 @@ def update_locations():
             print(locations)
             
             if station:
-                if station == [{'Stations': 'Ermou'}]:
+                print("station[0]", station[0])
+                if station[0] == [{'Station': 'Ermou'}]:
                     print(station)
                     processing_video = True
 
