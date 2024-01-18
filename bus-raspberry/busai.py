@@ -15,8 +15,6 @@ display.clear_output()
 import ultralytics
 ultralytics.checks()
 
-import subprocess
-
 import detectron2
 print("detectron2:", detectron2.__version__)
 
@@ -39,7 +37,6 @@ import pandas as pd
 import threading
 import time
 import random
-import queue
 import sys
 
 ids = sys.argv[1:]
@@ -77,7 +74,7 @@ processing_video = False
 
 def send_data(max_people, locations):
     edge_controller_url = "http://edge-controller-url" 
-    data = {"max_value": max_people, "locations": locations, "vehicleid":vehicleid, "crowdflowid": crowdflowid}
+    data = {"max_value": max_people, "locations": locations[0]['Location'], "vehicleid":vehicleid, "crowdflowid": crowdflowid}
     
     try:
         response = requests.post(edge_controller_url, json=data)
@@ -88,7 +85,7 @@ def send_data(max_people, locations):
 
 def send_to_station(station_info ):
     station_url = "http://station-url" 
-    data = {"vehicleid": vehicleid, "station": station_info}
+    data = {"vehicleid": vehicleid, "station_name": station_info[0][0]['Station'], "station_location": station_info[1][0]["Station's Location"]}
     
     try:
         response = requests.post(station_url, json=data)
@@ -186,15 +183,14 @@ def faker(station, location):
         max_people=0
     send_data(max_people, location)
     send_to_station(station)
-    print(station)
     print(max_people)
 
 
-def start_video(station):
+def start_video(station, location):
     cap = cv2.VideoCapture(SUBWAY_VIDEO_PATH)
     global processing_video, max_people
     frame_counter = 0
-    
+    send_to_station(station)
     if not cap.isOpened():
         print("Error: Could not open video.")
         return
@@ -224,8 +220,9 @@ def start_video(station):
         max_people +=max
     else:
         max_people=0
-        
-    #send_to_station(int(max_people), station)
+    
+    send_data(int(max_people), location)
+    
     print(max_people)
 
     cap.release()
@@ -258,7 +255,7 @@ def update_locations():
                     processing_video = True
 
                     # Start video processing thread
-                    video_thread = threading.Thread(target=start_video(station))
+                    video_thread = threading.Thread(target=start_video(station, locations))
                     video_thread.start()
 
                     # Wait for the video processing thread to finish
