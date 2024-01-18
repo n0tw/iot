@@ -38,6 +38,8 @@ import threading
 import time
 import random
 import sys
+from flask import Flask, request
+
 
 ids = sys.argv[1:]
 
@@ -49,6 +51,20 @@ else:
     
 crowdflowid = ids[0]
 vehicleid= ids[1]
+
+Favierou_vid = 0
+video_ended_event = threading.Event()
+
+app = Flask(__name__)
+
+@app.route('/video_ended', methods=['GET'])
+def handle_request():
+    global Favierou_vid
+    Favierou_vid = int(request.args.get('video'))
+    
+    if Favierou_vid == 1:
+        video_ended_event.set()
+    return 'Request handled successfully'
 
 
 video_info = sv.VideoInfo.from_video_path(SUBWAY_VIDEO_PATH)
@@ -181,7 +197,7 @@ def faker(station, location):
         max_people +=random_integer
     else:
         max_people=0
-    send_data(max_people, location)
+    send_data(int(max_people), location)
     send_to_station(station)
     print(max_people)
 
@@ -230,7 +246,7 @@ def start_video(station, location):
 
 
 def update_locations():
-    global row, processing_video
+    global row, processing_video, video_ended_event
     row = 1
     end_row = 123
 
@@ -262,6 +278,10 @@ def update_locations():
                     video_thread.join()
 
                     processing_video = False
+                if station[0] == [{'Station': 'Favierou'}]:
+                    faker(station, locations)
+                    video_ended_event.wait()
+                    video_ended_event.clear() 
                 else:
                     faker(station, locations)
             
