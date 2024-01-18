@@ -57,15 +57,26 @@ video_ended_event = threading.Event()
 
 app = Flask(__name__)
 
-@app.route('/video_ended', methods=['GET'])
+@app.route('/video_ended', methods=['POST'])
 def handle_request():
     global Favierou_vid
-    Favierou_vid = int(request.args.get('video'))
+    data = request.get_json()
+    Favierou_vid = int(data['favierou_vid'])
     
     if Favierou_vid == 1:
         video_ended_event.set()
     return 'Request handled successfully'
 
+class StoppableThread(threading.Thread):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._stop_event = threading.Event()
+
+    def stop(self):
+        self._stop_event.set()
+
+    def stopped(self):
+        return self._stop_event.is_set()
 
 video_info = sv.VideoInfo.from_video_path(SUBWAY_VIDEO_PATH)
 print("video_info", video_info)
@@ -271,7 +282,7 @@ def update_locations():
                     processing_video = True
 
                     # Start video processing thread
-                    video_thread = threading.Thread(target=start_video(station, locations))
+                    video_thread = StoppableThread(target=start_video, args=(station, locations))
                     video_thread.start()
 
                     # Wait for the video processing thread to finish
