@@ -284,7 +284,7 @@ def update_locations():
                     # Start video processing thread
                     video_thread = StoppableThread(target=start_video, args=(station, locations))
                     video_thread.start()
-
+                    video_thread.stop()
                     # Wait for the video processing thread to finish
                     video_thread.join()
 
