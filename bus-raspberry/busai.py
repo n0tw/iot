@@ -75,9 +75,9 @@ m=0
 max_people = 0
 processing_video = False 
 
-def send_data(max_value, locations):
+def send_data(max_people, locations):
     edge_controller_url = "http://edge-controller-url" 
-    data = {"max_value": max_people+max_value, "locations": locations, "vehicleid":vehicleid, "crowdflowid": crowdflowid}
+    data = {"max_value": max_people, "locations": locations, "vehicleid":vehicleid, "crowdflowid": crowdflowid}
     
     try:
         response = requests.post(edge_controller_url, json=data)
@@ -86,9 +86,9 @@ def send_data(max_value, locations):
     except requests.exceptions.RequestException as e:
         print(f"Error sending data: {e}")
 
-def send_to_station(max_value, station_name):
+def send_to_station(station_info ):
     station_url = "http://station-url" 
-    data = {"max_value": max_people+max_value, "crowdflowid": crowdflowid, "station": station_name}
+    data = {"vehicleid": vehicleid, "station": station_info}
     
     try:
         response = requests.post(station_url, json=data)
@@ -157,8 +157,8 @@ def process_frame(frame: np.ndarray, _) -> np.ndarray:
         for i,k in enumerate(z_1):
             if z[i]==False and z_1[i]==True:
                 max=max-1
-            #if z[i]==True and z_1[i]==False:
-            #    max=max+1
+            if z[i]==True and z_1[i]==False:
+                max=max+1
  
     print("δετεψτιονσ", max )
     z_1= z
@@ -176,16 +176,25 @@ if not cap.isOpened():
     print("Error: Could not open video.")
     exit()
 
-def faker(station):
-    random_integer = random.randint(-20, 30)
+def faker(station, location):
+    global max_people
+    random_integer = random.randint(-30, 30)
+    
+    if max_people + random_integer>=0:
+        max_people +=random_integer
+    else:
+        max_people=0
+    send_data(max_people, location)
+    send_to_station(station)
     print(station)
-    print(random_integer)
+    print(max_people)
 
 
-def start_video():
+def start_video(station):
     cap = cv2.VideoCapture(SUBWAY_VIDEO_PATH)
     global processing_video, max_people
-
+    frame_counter = 0
+    
     if not cap.isOpened():
         print("Error: Could not open video.")
         return
@@ -197,14 +206,28 @@ def start_video():
             print("Video has ended.")
             break
 
-        processed_frame, max_people = process_frame(frame, None)
+        frame_counter += 1
 
-        cv2.imshow("Video", processed_frame)
+        if frame_counter % 20 == 0:
+            processed_frame, max = process_frame(frame, None)
 
-        # Check if the user pressed 'q' to exit the loop
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+            cv2.imshow("Video", processed_frame)
+
+            # Check if the user pressed 'q' to exit the loop
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
+        if frame_counter == 20:
+            frame_counter = 0
+            
+    if max_people + max>=0:
+        max_people +=max
+    else:
+        max_people=0
+        
+    #send_to_station(int(max_people), station)
     print(max_people)
+
     cap.release()
     cv2.destroyAllWindows()
 
@@ -226,15 +249,16 @@ def update_locations():
         if result is not None:
             locations, station = result
             print(locations)
-            
+            t=3
             if station:
+                t=10
                 print("station[0]", station[0])
                 if station[0] == [{'Station': 'Ermou'}]:
                     print(station)
                     processing_video = True
 
                     # Start video processing thread
-                    video_thread = threading.Thread(target=start_video)
+                    video_thread = threading.Thread(target=start_video(station))
                     video_thread.start()
 
                     # Wait for the video processing thread to finish
@@ -242,13 +266,13 @@ def update_locations():
 
                     processing_video = False
                 else:
-                    faker(station)
+                    faker(station, locations)
             
             row += 1
         else:
             print("Error reading locations. Stopping update.")
             break
-        time.sleep(3)
+        time.sleep(t)
 
 # Start the location update thread
 locations_thread = threading.Thread(target=update_locations)
