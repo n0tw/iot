@@ -1,10 +1,33 @@
 import datetime
+import json
+from bson import ObjectId
 from flask import Flask, request, jsonify
 import requests
 import aiohttp
 import asyncio
 
 app = Flask(__name__)
+
+async def post_or_patch_to_context_broker(postedData):
+    endpoint = "http://150.140.186.118:1026/v2/entities"
+    headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+    updateData = postedData
+    updateData.pop('id')
+    updateData.pop('type')
+    payload = {}
+    # Update the entity with the provided data
+    for key, value in updateData.items():
+        if isinstance(value, ObjectId):
+            value = str(value)
+        payload[key] = {'value': value}
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.patch(endpoint+'/'+str(postedData['id'+'/attrs']), headers=headers, data=json.dumps(payload)) as response:
+                response.raise_for_status()
+        except Exception as e:
+            print(f"Error: {str(e)}")
+            async with session.post(endpoint, headers=headers, data=json.dumps(postedData)) as response:
+                response.raise_for_status()
 
 async def get_from_endpoint(endpoint):
     async with aiohttp.ClientSession() as session:
@@ -18,6 +41,20 @@ async def post_to_endpoint(data, endpoint):
         async with session.post(endpoint, json=data) as response:
             response.raise_for_status()
 
+async def handle_request_to_context_broker(data):
+    try:
+        # Edit the data (modify as per your requirements)
+        # edited_data = edit_data(data)
+
+        # Asynchronously post the edited data to another endpoint
+        await post_or_patch_to_context_broker(data)
+
+        # Respond to the original request
+        return jsonify({'status': 'success'})
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+    
 async def handle_request(data, endpoint):
     try:
         # Edit the data (modify as per your requirements)
@@ -92,7 +129,7 @@ async def receive_bus_data():
     extDataToPost['version'] = "Version "+str(maxVersion)
     await handle_request(extDataToPost, "http://localhost:5003/entity/"+str(vid)+'/version'+str(maxVersion))
 
-    result = await handle_request(vehicleData, "http://150.140.186.118:1026/v2/entities")
+    result = await handle_request_to_context_broker(vehicleData)
     return result
 
 @app.route('/receive_station_data', methods=['POST'])
@@ -168,7 +205,7 @@ async def receive_station_data():
     extDataToPost['version'] = "Version "+str(maxVersion)
     await handle_request(extDataToPost, "http://localhost:5003/entity/"+str(tSid)+'/version'+str(maxVersion))
 
-    result = await handle_request(transportStationData, "http://150.140.186.118:1026/v2/entities")
+    result = await handle_request_to_context_broker(transportStationData)
     return result
 
 @app.route('/receive_crowd_data', methods=['POST'])
@@ -212,7 +249,7 @@ async def receive_crowd_data():
     extDataToPost['version'] = "Version "+str(maxVersion)
     await handle_request(extDataToPost, "http://localhost:5003/entity/"+str(cFOid)+'/version'+str(maxVersion))
 
-    result = await handle_request(crowdFlowObservedData, "http://150.140.186.118:1026/v2/entities")
+    result = await handle_request_to_context_broker(crowdFlowObservedData)
     return result
 
 @app.route('/receive_violation_data', methods=['POST'])
@@ -265,7 +302,7 @@ async def receive_violation_data():
     extDataToPost['version'] = "Version "+str(maxVersion)
     await handle_request(extDataToPost, "http://localhost:5003/entity/"+str(tVid)+'/version'+str(maxVersion))
 
-    result = await handle_request(trafficViolationData, "http://150.140.186.118:1026/v2/entities")
+    result = await handle_request_to_context_broker(trafficViolationData)
     return result
 
 if __name__ == '__main__':
