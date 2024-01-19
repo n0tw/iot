@@ -304,7 +304,7 @@ def update_locations():
                     video_thread.join()
 
                     processing_video = False
-                if station[0] == [{'Station': 'Favierou'}]:
+                elif station[0] == [{'Station': 'Favierou'}]:
                     faker(station, locations)
                     video_ended_event.wait()
                     video_ended_event.clear() 
