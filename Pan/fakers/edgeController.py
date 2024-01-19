@@ -9,6 +9,68 @@ def receive_bus_data():
     try:
         # Get the data from the POST request
         data = request.get_json()
+
+        # vid = data['id']
+        # vplate = data['plate']
+        # vcords = data['location']
+        # vname = data['name']
+        # vdatetimeObs = data['datetimeObserved']
+        # vcFOid = data['cFOID']
+        # vsrvcOnDuty = data['onDuty']
+        # vsrvcStatus = data['status']
+        # vehicleData = {
+        #     "id": vid,
+        #     "type": "Vehicle",
+        #     "category": {
+        #         "type": "Property",
+        #         "value": [
+        #             "municipalServices"
+        #         ]
+        #     },
+        #     "license_plate": {
+        #         "type": "Property",
+        #         "value": vplate
+        #     },
+        #     "location": {
+        #         "type": "GeoProperty",
+        #         "value": {
+        #             "type": "Point",
+        #             "coordinates": vcords
+        #         }
+        #     },
+        #     "name": {
+        #         "type": "Property",
+        #         "value": vname
+        #     },
+        #     "observationDateTime": {
+        #         "type": "Property",
+        #         "value": {
+        #             "@type": "DateTime",
+        #             "@value": vdatetimeObs
+        #         }
+        #     },
+        #     "crowdFlowObserved": {
+        #         "type": "CrowdFlowObserved",
+        #         "value": vcFOid
+        #     },
+        #     "serviceOnDuty": {
+        #         "type": "Property",
+        #         "value": vsrvcOnDuty,
+        #     },
+        #     "serviceStatus": {
+        #         "type": "Property",
+        #         "value": vsrvcStatus
+        #     },
+        #     "vehicleTrackerDevice": {
+        #         "type": "Property",
+        #         "value": "Installed"
+        #     },
+        #     "vehicleType": {
+        #         "type": "Property",
+        #         "value": "bus"
+        #     }
+        # }
+        
         print(data)
         # Edit the data (modify as per your requirements)
         #edited_data = edit_data(data)
@@ -30,9 +92,14 @@ def receive_station_data():
 
         tSid = data['id']
         tSlocation = data['location']
+        tSname = data['name']
         transportStationData= {
             "id": tSid,
             "type": "TransportStation",
+            "name": {
+                "type": "String",
+                "value": tSname
+            },
             "contractingAuthority": {
                 "type": "Property",
                 "value": "Municipality of Patras"
@@ -160,4 +227,4 @@ def post_to_endpoint(data, endpoint):
 
 if __name__ == '__main__':
     # Run the Flask app on port 5000
-    app.run(port=5000)
+    app.run(port=5002)
