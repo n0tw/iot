@@ -169,7 +169,8 @@ async def post_periodically_async():
     global transportStationIDs
     global transportStationNames
     global tSlocations
-    global pause_flag
+    global pause_flag_0
+    global pause_flag_5
 
     edge_controller_url = 'http://localhost:5002/receive_crowd_data'  # Adjust the URL as needed
     second_endpoint_url = 'http://localhost:5002/receive_station_data'
@@ -215,6 +216,7 @@ async def post_async(session, url, data):
 async def run_when_paused(session):
     global shared_dynamic_data
     global transportStationNames
+    global pause_flag_5
 
     edge_controller_url = 'http://localhost:5002/receive_crowd_data'  # Adjust the URL as needed
     second_endpoint_url = 'http://localhost:5002/receive_station_data'
@@ -320,13 +322,14 @@ async def run_when_paused(session):
                 zone.trigger(detections = detections_0)
                 frame = zone_annotator.annotate(scene=frame)      
             
-            cv2.imshow("yolov8", frame)
+            cv2.imshow("yolov5", frame)
 
             if (cv2.waitKey(1) == ord('q')):
                 break
 
             frame_counter += 1
 
+        pause_flag_5 = False
         await post_async(session, "http://localhost:5000/video_ended", {'favierou_vid': 1})
         await post_async(session, "http://localhost:5002/receive_violation_data", {'tvid': "",
                                                                                     'datetime': datetime.datetime.now().isoformat(),
