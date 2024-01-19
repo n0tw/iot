@@ -271,6 +271,6 @@ api.add_resource(EntitiesByTimeResource, '/entities_by_time/<string:entityId>/<i
 api.add_resource(EntityResourceMultipleInstances, '/entities/<string:entity_id>')
     
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5003)
 
     

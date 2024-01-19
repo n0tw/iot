@@ -328,6 +328,11 @@ async def run_when_paused(session):
             frame_counter += 1
 
         await post_async(session, "http://localhost:5000/video_ended", {'favierou_vid': 1})
+        await post_async(session, "http://localhost:5002/receive_violation_data", {'tvid': "",
+                                                                                    'datetime': datetime.datetime.now().isoformat(),
+                                                                                    'plate': "AXR1056",
+                                                                                    'stationName': "Intracom",
+                                                                                    'location': tSlocations[14]})
 
         cap.release()
         cv2.destroyAllWindows()
