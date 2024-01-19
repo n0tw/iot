@@ -107,6 +107,7 @@ values_iterator = itertools.cycle(['5', '20', '15'])
 
 # Define the endpoint to receive data
 @app.route('/receive_data', methods=['POST'])
+<<<<<<< HEAD
 async def receive_data():
     global transportStationNames
     global transportStationIDs
@@ -129,6 +130,23 @@ async def receive_data():
         index = transportStationNames.index(data['station_name'])
         # Set the shared dynamic data based on received data
         set_shared_dynamic_data(data)
+=======
+def receive_data():
+    global transportStationNames
+    global transportStationIDs
+    try:
+        # Get the data from the POST request
+        data = request.get_json()
+        index = transportStationNames.index(data['stationName'])
+        # Set the shared dynamic data based on received data
+        set_shared_dynamic_data(data)
+
+        # Identify transportStationID with the vehicleID received and post
+        dataToPost = {'id': transportStationIDs[index], 'vID': "VehicleID", "dtLastReported": datetime.datetime.now().isoformat(), 
+                      'cFOID': None, "dtLastObserved":  None, 'location': data['stationLocation'], 'name': data['stationName']}
+        # Post the received data to the edge controller
+        post_to_edge_controller(data)
+>>>>>>> bda8c6ecd319962f520d761af98befdeb00651b1
 
         # Identify transportStationID with the vehicleID received and post
         dataToPost = {'id': transportStationIDs[index], 
@@ -212,6 +230,7 @@ async def post_async(session, url, data):
     async with session.post(url, json=data) as response:
         response.raise_for_status()
 
+<<<<<<< HEAD
 async def run_when_paused(session):
     global shared_dynamic_data
     global transportStationNames
@@ -332,6 +351,17 @@ async def run_when_paused(session):
         cap.release()
         cv2.destroyAllWindows()
 
+=======
+        second_endpoint_url = 'http://localhost:5000/receive_station_data'
+        # (+) add for loop for all transportStationIDs (and cFOIDs)
+        response2 = request.post(second_endpoint_url, json={'id': transportStationIDs[j], 'vID': None,
+                                                            "dtLastReported": None, 
+                                                            'cFOID': crowdFlowObservedIDs[j],
+                                                            "dtLastObserved":  datetime.datetime.now().isoformat(),
+                                                            'location': tSlocations[j],
+                                                            'name': transportStationNames[j]})
+        response2.raise_for_status()
+>>>>>>> bda8c6ecd319962f520d761af98befdeb00651b1
 
 # Schedule the periodic job
 schedule.every(5).seconds.do(lambda: asyncio.run(post_periodically_async()))
