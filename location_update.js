@@ -5,7 +5,7 @@ const updatedValue ="ngsi-ld:Trafficviolation:234R:0212";
 const contextBrokerUrl = `http://150.140.186.118:1026/v2/entities/${entityId}/attrs`;
 
 fetch(contextBrokerUrl, {
-    method: 'PATCH', // Use PATCH instead of PUT
+    method: 'PATCH', 
     headers: {
         'Content-Type': 'application/json',
     },
