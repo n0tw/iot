@@ -2,58 +2,30 @@ import datetime
 import json
 from bson import ObjectId
 from flask import Flask, request, jsonify
-import requests
+import copy
 import aiohttp
-import asyncio
 
 app = Flask(__name__)
-
-async def post_or_patch_to_context_broker(postedData):
-    endpoint = "http://150.140.186.118:1026/v2/entities"
-    headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-    updateData = postedData
-    updateData.pop('id')
-    updateData.pop('type')
-    payload = {}
-    # Update the entity with the provided data
-    for key, value in updateData.items():
-        if isinstance(value, ObjectId):
-            value = str(value)
-        payload[key] = {'value': value}
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.patch(endpoint+'/'+str(postedData['id'+'/attrs']), headers=headers, data=json.dumps(payload)) as response:
-                response.raise_for_status()
-        except Exception as e:
-            print(f"Error: {str(e)}")
-            async with session.post(endpoint, headers=headers, data=json.dumps(postedData)) as response:
-                response.raise_for_status()
 
 async def get_from_endpoint(endpoint):
     async with aiohttp.ClientSession() as session:
         async with session.get(endpoint) as response:
-            response.raise_for_status()
-            return await response.json()
+            try:
+                response.raise_for_status()
+                data = await response.json()
+                return data
+            except aiohttp.ClientResponseError as e:
+                print(f"Error fetching data from {endpoint}: {e}")
+                return None
+            except json.JSONDecodeError as e:
+                print(f"Error decoding JSON from {endpoint}: {e}")
+                return None
 
 # Function to post data to another endpoint
 async def post_to_endpoint(data, endpoint):
     async with aiohttp.ClientSession() as session:
-        async with session.post(endpoint, json=data) as response:
+        async with session.post(endpoint, json={'data': data}) as response:
             response.raise_for_status()
-
-async def handle_request_to_context_broker(data):
-    try:
-        # Edit the data (modify as per your requirements)
-        # edited_data = edit_data(data)
-
-        # Asynchronously post the edited data to another endpoint
-        await post_or_patch_to_context_broker(data)
-
-        # Respond to the original request
-        return jsonify({'status': 'success'})
-
-    except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)}), 500
     
 async def handle_request(data, endpoint):
     try:
@@ -71,7 +43,7 @@ async def handle_request(data, endpoint):
 
 @app.route('/receive_bus_data', methods=['POST'])
 async def receive_bus_data():
-    data = await request.get_json()
+    data = request.get_json()
     vid = data['vehicleid']
     vcords = data['locations']
     vplate = "LICENCE PLATE"
@@ -119,22 +91,23 @@ async def receive_bus_data():
     }
 
     extData = await get_from_endpoint("http://localhost:5003/entities"+'/'+str(vid))
-    maxVersion = 1
+    maxVersion = 0
     if extData is not None:
-        maxVersion = extData['data'][0]['version'].split(' ')[1]
+        maxVersion = int(extData['data'][0]['version'].split(' ')[1])
         for i in range(0,len(extData['data'])):
-            if(extData['data'][i]['version'].split(' ')[1] > maxVersion):
-                maxVersion = extData['data'][i]['version'].split(' ')[1]
-    extDataToPost = vehicleData
-    extDataToPost['version'] = "Version "+str(maxVersion)
-    await handle_request(extDataToPost, "http://localhost:5003/entity/"+str(vid)+'/version'+str(maxVersion))
+            if(int(extData['data'][i]['version'].split(' ')[1]) > maxVersion):
+                maxVersion = int(extData['data'][i]['version'].split(' ')[1])
+    extDataToPost = copy.deepcopy(vehicleData)
+    maxVersion = maxVersion + 1
+    extDataToPost['version'] = f"Version {maxVersion}"
+    await handle_request(extDataToPost, f"http://localhost:5003/entity/{vid}/version {maxVersion}")
 
-    result = await handle_request_to_context_broker(vehicleData)
+    result = await handle_request(vehicleData, "http://localhost:5004/receive_context_data")
     return result
 
 @app.route('/receive_station_data', methods=['POST'])
 async def receive_station_data():
-    data = await request.get_json()
+    data = request.get_json()
 
     tSid = data['id']
     tSlocation = data['location']
@@ -195,22 +168,23 @@ async def receive_station_data():
                                                         }
     
     extData = await get_from_endpoint("http://localhost:5003/entities"+'/'+str(tSid))
-    maxVersion = 1
+    maxVersion = 0
     if extData is not None:
-        maxVersion = extData['data'][0]['version'].split(' ')[1]
+        maxVersion = int(extData['data'][0]['version'].split(' ')[1])
         for i in range(0,len(extData['data'])):
-            if(extData['data'][i]['version'].split(' ')[1] > maxVersion):
-                maxVersion = extData['data'][i]['version'].split(' ')[1]
-    extDataToPost = transportStationData
-    extDataToPost['version'] = "Version "+str(maxVersion)
-    await handle_request(extDataToPost, "http://localhost:5003/entity/"+str(tSid)+'/version'+str(maxVersion))
+            if(int(extData['data'][i]['version'].split(' ')[1]) > maxVersion):
+                maxVersion = int(extData['data'][i]['version'].split(' ')[1])
+    extDataToPost = copy.deepcopy(transportStationData)
+    maxVersion = maxVersion + 1
+    extDataToPost['version'] = f"Version {maxVersion}"
+    await handle_request(extDataToPost, f"http://localhost:5003/entity/{tSid}/version {maxVersion}")
 
-    result = await handle_request_to_context_broker(transportStationData)
+    result = await handle_request(transportStationData, "http://localhost:5004/receive_context_data")
     return result
 
 @app.route('/receive_crowd_data', methods=['POST'])
 async def receive_crowd_data():
-    data = await request.get_json()
+    data = request.get_json()
 
     cFOid = data['id']
     cFOpc = data['value']
@@ -239,22 +213,23 @@ async def receive_crowd_data():
     }
 
     extData = await get_from_endpoint("http://localhost:5003/entities"+'/'+str(cFOid))
-    maxVersion = 1
+    maxVersion = 0
     if extData is not None:
-        maxVersion = extData['data'][0]['version'].split(' ')[1]
+        maxVersion = int(extData['data'][0]['version'].split(' ')[1])
         for i in range(0,len(extData['data'])):
-            if(extData['data'][i]['version'].split(' ')[1] > maxVersion):
-                maxVersion = extData['data'][i]['version'].split(' ')[1]
-    extDataToPost = crowdFlowObservedData
-    extDataToPost['version'] = "Version "+str(maxVersion)
-    await handle_request(extDataToPost, "http://localhost:5003/entity/"+str(cFOid)+'/version'+str(maxVersion))
+            if(int(extData['data'][i]['version'].split(' ')[1]) > maxVersion):
+                maxVersion = int(extData['data'][i]['version'].split(' ')[1])
+    extDataToPost = copy.deepcopy(crowdFlowObservedData)
+    maxVersion = maxVersion + 1
+    extDataToPost['version'] = f"Version {maxVersion}"
+    await handle_request(extDataToPost, f"http://localhost:5003/entity/{cFOid}/version {maxVersion}")
 
-    result = await handle_request_to_context_broker(crowdFlowObservedData)
+    result = await handle_request(crowdFlowObservedData, "http://localhost:5004/receive_context_data")
     return result
 
 @app.route('/receive_violation_data', methods=['POST'])
 async def receive_violation_data():
-    data = await request.get_json()
+    data = request.get_json()
     tVid = data['tvid']
     tVdatetime = data['datetime']
     tVplate = data['plate']
@@ -292,17 +267,18 @@ async def receive_violation_data():
     }
 
     extData = await get_from_endpoint("http://localhost:5003/entities"+'/'+str(tVid))
-    maxVersion = 1
+    maxVersion = 0
     if extData is not None:
-        maxVersion = extData['data'][0]['version'].split(' ')[1]
+        maxVersion = int(extData['data'][0]['version'].split(' ')[1])
         for i in range(0,len(extData['data'])):
-            if(extData['data'][i]['version'].split(' ')[1] > maxVersion):
-                maxVersion = extData['data'][i]['version'].split(' ')[1]
-    extDataToPost = trafficViolationData
-    extDataToPost['version'] = "Version "+str(maxVersion)
-    await handle_request(extDataToPost, "http://localhost:5003/entity/"+str(tVid)+'/version'+str(maxVersion))
+            if(int(extData['data'][i]['version'].split(' ')[1]) > maxVersion):
+                maxVersion = int(extData['data'][i]['version'].split(' ')[1])
+    extDataToPost = copy.deepcopy(trafficViolationData)
+    maxVersion = maxVersion + 1
+    extDataToPost['version'] = f"Version {maxVersion}"
+    await handle_request(extDataToPost, f"http://localhost:5003/entity/{tVid}/version {maxVersion}")
 
-    result = await handle_request_to_context_broker(trafficViolationData)
+    result = await handle_request(trafficViolationData, "http://localhost:5004/receive_context_data")
     return result
 
 if __name__ == '__main__':

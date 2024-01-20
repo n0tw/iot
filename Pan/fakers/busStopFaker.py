@@ -1,7 +1,6 @@
 import aiohttp
 import asyncio
 import itertools
-import requests
 from flask import Flask, jsonify, request
 import schedule
 import time

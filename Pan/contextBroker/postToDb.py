@@ -5,8 +5,8 @@ from flask import jsonify
 from bson import ObjectId
 
 # FIWARE Context Broker endpoint
-#orion_url = "http://localhost:1026/v2/entities"
-orion_url = "http://150.140.186.118:1026/v2/entities"
+orion_url = "http://localhost:1026/v2/entities"
+#orion_url = "http://150.140.186.118:1026/v2/entities"
 
 app = connexion.App(__name__, specification_dir='./')
 flask_app = app.app
@@ -70,7 +70,7 @@ def patchEntityRoute(entityId, updateData):
                 payload[key] = {'value': value}
 
             # Update the entity in the MongoDB collection
-            response = requests.patch(orion_url + '/' + entityId + '/attrs', headers=headers, data=json.dumps(payload))
+            response = requests.patch(orion_url+'/'+entityId+'/attrs', headers=headers, data=json.dumps(payload))
 
             return jsonify({'message': f'Entity with ID {entityId} partially updated', 'data': payload})
     except Exception as e:
@@ -101,10 +101,10 @@ def deleteEntityRoute(entityId):
 if __name__ == '__main__':
     #   Input data
     #   crowdFlowObserverd inputs
-    cFOid = "urn:ngsi-ld:CrowdFlowObserved:Valladolid_1"
+    cFOid = "urn:ngsi-ld:CrowdFlowObserved:Blah:1"
     cFObool = False
     cFOdatetime = "2018-08-07T11:10:00/2018-08-07T11:15:00"
-    cFOpc = 105
+    cFOpc = 120
     cFOloctype = "LineString"
     cFOcords = [
                     [
@@ -353,7 +353,9 @@ if __name__ == '__main__':
         },
     }
 
+    
     # Any method we want to use:
 
     #postEntityRoute(transportStationData)
-    postEntityRoute(vehicleData)
+    patchEntityRoute(cFOid, crowdFlowObservedData)
+    #postEntityRoute(crowdFlowObservedData)

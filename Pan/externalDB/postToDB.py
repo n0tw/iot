@@ -269,7 +269,7 @@ vehicleData = {
 tz_offset = 0
 # Creating a timezone object
 
-base_url = "http://localhost:5000"
+base_url = "http://localhost:5003"
 
 # response = requests.post(
 #     f"{base_url}/entity/{cFOid}/{cFOversion}",
@@ -277,10 +277,16 @@ base_url = "http://localhost:5000"
 # )
 
 response = requests.post(
+    f"{base_url}/entity/{tSid}/Version%1",
+    json={"data": transportStationData}
+)
+
+response = requests.post(
     f"{base_url}/entity/{tSid}/Version%2",
     json={"data": transportStationData}
 )
 
+response = requests.get(f"{base_url}/entities/{tSid}")
 # response = requests.get(
 #    f"http://localhost:5000/entities_by_time/{cFOid}/{2018}/{3}/{11}/{15}/{31}/{2}/{2023}/{4}/{5}/{1}/{5}/{2}/{tz_offset}"
 # )

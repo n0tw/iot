@@ -25,9 +25,9 @@ parser.add_argument('data', type=dict, help='Data to be posted or patched', requ
 class EntityResourceMultipleInstances(Resource):
     def get(self, entity_id):
         data = list(collection.find({'id': entity_id}))
-        json_doc = json.loads(json_util.dumps(data))
         if not data:
             return jsonify({'message': f'Entity with ID {entity_id} not found'}), 404
+        json_doc = json.loads(json_util.dumps(data))
         return jsonify({'message': f'Entity with ID {entity_id} received', 'data': json_doc})
 
 class EntityResource(Resource):
