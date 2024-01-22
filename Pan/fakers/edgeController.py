@@ -1,9 +1,23 @@
 import datetime
 import json
-from bson import ObjectId
+import signal
+from paho.mqtt import client as mqtt_client
 from flask import Flask, request, jsonify
 import copy
 import aiohttp
+
+def connect_mqtt():
+    def on_connect(client, userdata, flags, rc):
+        if rc == 0:
+            print("Connected to MQTT broker")
+        else:
+            print("Failed to connect, return code %d\n", rc)
+    client = mqtt_client.Client("Pannic")
+    client.on_connect = on_connect
+    client.connect("150.140.186.118", 1883)
+    return client
+
+client = connect_mqtt()
 
 app = Flask(__name__)
 
@@ -43,12 +57,16 @@ async def handle_request(data, endpoint):
 
 @app.route('/receive_bus_data', methods=['POST'])
 async def receive_bus_data():
+    global client
+
     data = request.get_json()
+
     vid = data['vehicleid']
     vcords = data['locations']
     vplate = "LICENCE PLATE"
     vdatetimeObs = datetime.datetime.now().isoformat()
     vcFOid = data['crowdflowid']
+
     vehicleData = {
         "id": vid,
         "type": "Vehicle",
@@ -100,13 +118,21 @@ async def receive_bus_data():
     extDataToPost = copy.deepcopy(vehicleData)
     maxVersion = maxVersion + 1
     extDataToPost['version'] = f"Version {maxVersion}"
+
+    # Post to external DB
     await handle_request(extDataToPost, f"http://localhost:5003/entity/{vid}/version {maxVersion}")
 
+    # Publish to MQTT broker
+    client.publish(f"json/busstopmonitoring/{vid}", json.dumps(vehicleData))
+
+    # Post to context broker
     result = await handle_request(vehicleData, "http://localhost:5004/receive_context_data")
     return result
 
 @app.route('/receive_station_data', methods=['POST'])
 async def receive_station_data():
+    global client
+
     data = request.get_json()
 
     tSid = data['id']
@@ -177,13 +203,21 @@ async def receive_station_data():
     extDataToPost = copy.deepcopy(transportStationData)
     maxVersion = maxVersion + 1
     extDataToPost['version'] = f"Version {maxVersion}"
+
+    # Post to external DB
     await handle_request(extDataToPost, f"http://localhost:5003/entity/{tSid}/version {maxVersion}")
 
+    # Publish to MQTT broker
+    client.publish(f"json/busstopmonitoring/{tSid}", json.dumps(transportStationData))
+
+    # Post to context broker
     result = await handle_request(transportStationData, "http://localhost:5004/receive_context_data")
     return result
 
 @app.route('/receive_crowd_data', methods=['POST'])
 async def receive_crowd_data():
+    global client
+
     data = request.get_json()
 
     cFOid = data['id']
@@ -191,6 +225,7 @@ async def receive_crowd_data():
     cFOdatetime = data['dateObserved']
     cFObool = False
     if(int(cFOpc) > 20): cFObool = True
+
     # Create payload
     crowdFlowObservedData = {
         "id": cFOid,
@@ -224,17 +259,25 @@ async def receive_crowd_data():
     extDataToPost['version'] = f"Version {maxVersion}"
     await handle_request(extDataToPost, f"http://localhost:5003/entity/{cFOid}/version {maxVersion}")
 
+    # Publish to MQTT broker
+    client.publish(f"json/busstopmonitoring/{cFOid}", json.dumps(crowdFlowObservedData))
+
+    # Post to context broker
     result = await handle_request(crowdFlowObservedData, "http://localhost:5004/receive_context_data")
     return result
 
 @app.route('/receive_violation_data', methods=['POST'])
 async def receive_violation_data():
+    global client
+
     data = request.get_json()
+
     tVid = data['tvid']
     tVdatetime = data['datetime']
     tVplate = data['plate']
     tVtSname = data['stationName']
     tVcords = data['location']
+
     trafficViolationData = {
         "id": tVid,
         "type": "TrafficViolation",
@@ -276,10 +319,29 @@ async def receive_violation_data():
     extDataToPost = copy.deepcopy(trafficViolationData)
     maxVersion = maxVersion + 1
     extDataToPost['version'] = f"Version {maxVersion}"
+
+    # Post to external DB
     await handle_request(extDataToPost, f"http://localhost:5003/entity/{tVid}/version {maxVersion}")
 
+    # Publish to MQTT broker
+    client.publish(f"json/busstopmonitoring/{tVid}", json.dumps(trafficViolationData))
+
+    # Post to context broker
     result = await handle_request(trafficViolationData, "http://localhost:5004/receive_context_data")
     return result
+
+def handle_ctrl_c(signal, frame):
+    global client
+    print("Received Ctrl+C. Cleaning up or executing additional commands...")
+    # Add your cleanup or additional commands here
+    client.disconnect()
+    # For example, you might close database connections, release resources, etc.
+    print("Cleanup complete. Exiting.")
+    # Exit the application
+    exit(0)
+
+# Register the signal handler
+signal.signal(signal.SIGINT, handle_ctrl_c)
 
 if __name__ == '__main__':
     # Run the Flask app on port 5002

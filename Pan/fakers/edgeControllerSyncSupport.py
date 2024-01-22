@@ -3,7 +3,8 @@ from bson import ObjectId
 from flask import Flask, request, jsonify
 import requests
 
-orion_url = "http://localhost:1026/v2/entities"
+#orion_url = "http://localhost:1026/v2/entities"
+orion_url = "http://150.140.186.118:1026/v2/entities"
 entitiesFirstTime = {}
 
 app = Flask(__name__)
@@ -110,7 +111,7 @@ def deleteEntityRoute(entityId):
     except requests.RequestException as e:
         print(f"Request failed: {str(e)}")
         return jsonify({'message': 'Error occurred during get'}), 500
-    
+
 if __name__ == '__main__':
     # Run the Flask app on port 5004
     app.run(port=5004)
