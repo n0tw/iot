@@ -26,7 +26,8 @@ class EntityResourceMultipleInstances(Resource):
     def get(self, entity_id):
         data = list(collection.find({'id': entity_id}))
         if not data:
-            return jsonify({'message': f'Entity with ID {entity_id} not found'}), 404
+            return None 
+            #return jsonify({'message': f'Entity with ID {entity_id} not found'}), 404
         json_doc = json.loads(json_util.dumps(data))
         return jsonify({'message': f'Entity with ID {entity_id} received', 'data': json_doc})
 
