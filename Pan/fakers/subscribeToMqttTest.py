@@ -7,7 +7,7 @@ def connect_mqtt():
 
 def on_connect(client, userdata, flags, rc):
     print(f"Connected with result code {rc}")
-    client.subscribe("json/busstopmonitoring/urn:ngsi-ld:CrowdFlowObserved:Station:1")
+    client.subscribe("json/busstopmonitoring/urn:ngsi:ld:CrowdFlowObserved:Station:1")
 
 def on_message(client, userdata, msg):
     print(f"Received message: {msg.payload.decode()} on topic {msg.topic}")

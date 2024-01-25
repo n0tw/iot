@@ -32,8 +32,8 @@ pause_flag_5 = False
 crowdFlowObservedIDs = []
 transportStationIDs = []
 for i in range(1,33):
-    crowdFlowObservedIDs.append("urn:ngsi-ld:CrowdFlowObserved:Station:"+str(i))
-    transportStationIDs.append("urn:ngsi-ld:Station:Station:"+str(i))
+    crowdFlowObservedIDs.append("urn:ngsi:ld:CrowdFlowObserved:Station:"+str(i))
+    transportStationIDs.append("urn:ngsi:ld:Station:Station:"+str(i))
 
 transportStationNames = ["Ermou",
                         "Agiou Nikolaou",
@@ -330,11 +330,12 @@ async def run_when_paused(session):
 
         pause_flag_5 = False
         await post_async(session, "http://localhost:5000/video_ended", {'favierou_vid': 1})
-        await post_async(session, "http://localhost:5002/receive_violation_data", {'tvid': "",
-                                                                                    'datetime': datetime.datetime.now().isoformat(),
-                                                                                    'plate': "AXR1056",
-                                                                                    'stationName': "Intracom",
-                                                                                    'location': tSlocations[14]})
+        await post_async(session, "http://localhost:5002/receive_violation_data", {
+                                                                                'tvid': "urn:ngsi:ld:TrafficViolation:IllegalParking:1",
+                                                                                'datetime': datetime.datetime.now().isoformat(),
+                                                                                'plate': "AXR1056",
+                                                                                'stationName': "Intracom",
+                                                                                'location': tSlocations[14]})
 
         cap.release()
         cv2.destroyAllWindows()
