@@ -5,6 +5,8 @@ import time
 
 app = Flask(__name__)
 
+chatIDs = []
+
 # Replace 'YOUR TELEGRAM BOT TOKEN' with your actual Telegram Bot token
 TOKEN = '6971283115:AAGHpKPd5hXSbDf6afYORNbIK7oohLrjwiI'
 TELEGRAM_API_BASE_URL = f"https://api.telegram.org/bot{TOKEN}/"
@@ -24,7 +26,9 @@ def save_words_to_file(file_path, words):
             file.write(word + '\n')
 
 def collect_chat_ids():
-    file_path = 'chatIds.txt'  # Change this to the path of your txt file
+    global chatIDs
+
+    file_path = "C:/Users/pangl/Desktop/GitRepo/Pan/fakers/chatIds.txt"  # Change this to the path of your txt file
 
     # Read words from the file
     chat_ids = read_words_from_file(file_path)
@@ -32,11 +36,14 @@ def collect_chat_ids():
     print(chat_ids)
 
     url = f"https://api.telegram.org/bot{TOKEN}/getUpdates"
-    data = requests.get(url).json()
-    for doc in data:
-        if doc['message']['chat']['id'] not in chat_ids:
-            chat_ids.append(doc['message']['chat']['id'])
+    dataReceived = requests.get(url).json()
+    data = dataReceived['result']
 
+    for doc in data:
+        if str(doc['message']['chat']['id']) not in chat_ids:
+            chat_ids.append(str(doc['message']['chat']['id']))
+
+    chatIDs = chat_ids
     # Save the updated list back to the file
     save_words_to_file(file_path, chat_ids)
     print("Updated chat IDs have been saved to the file.")
@@ -49,10 +56,10 @@ schedule.every(20).seconds.do(job)
 
 @app.route('/forward_notification', methods=['POST'])
 def forward_notification():
-    global chat_ids
+    global chatIDs
     data = request.get_json()
     print(data)
-    for chatID in chat_ids:
+    for chatID in chatIDs:
         print(requests.get(f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chatID}&text={data['data']['message']}").json())
     return '', 200
 

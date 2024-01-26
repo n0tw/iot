@@ -266,7 +266,6 @@ async def receive_crowd_data():
         }
     }
 
-    print(crowdFlowObservedData)
     extData = await get_from_endpoint("http://localhost:5003/entities"+'/'+str(cFOid))
     maxVersion = 0
     if extData is not None:
