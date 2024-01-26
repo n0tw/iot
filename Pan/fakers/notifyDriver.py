@@ -58,7 +58,6 @@ schedule.every(20).seconds.do(job)
 def forward_notification():
     global chatIDs
     data = request.get_json()
-    print(data)
     for chatID in chatIDs:
         print(requests.get(f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chatID}&text={data['data']['message']}").json())
     return '', 200
