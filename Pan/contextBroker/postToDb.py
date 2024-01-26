@@ -5,8 +5,8 @@ from flask import jsonify
 from bson import ObjectId
 
 # FIWARE Context Broker endpoint
-orion_url = "http://localhost:1026/v2/entities"
-#orion_url = "http://150.140.186.118:1026/v2/entities"
+#orion_url = "http://localhost:1026/v2/entities"
+orion_url = "http://150.140.186.118:1026/v2/entities"
 
 app = connexion.App(__name__, specification_dir='./')
 flask_app = app.app
@@ -357,5 +357,5 @@ if __name__ == '__main__':
     # Any method we want to use:
 
     #postEntityRoute(transportStationData)
-    patchEntityRoute(cFOid, crowdFlowObservedData)
+    #patchEntityRoute(cFOid, crowdFlowObservedData)
     #postEntityRoute(crowdFlowObservedData)
