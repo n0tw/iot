@@ -29,6 +29,7 @@ shared_dynamic_data = {'name': None}
 
 pause_flag_0 = False
 pause_flag_5 = False
+violationTracked = False
 crowdFlowObservedIDs = []
 transportStationIDs = []
 for i in range(1,33):
@@ -111,6 +112,7 @@ async def receive_data():
     global transportStationIDs
     global pause_flag_0
     global pause_flag_5
+    global violationTracked
     try:
         # Get the data from the POST request
         data = request.get_json()
@@ -129,6 +131,9 @@ async def receive_data():
         # Set the shared dynamic data based on received data
         set_shared_dynamic_data(data)
 
+        tVid = "_"
+        if index == 14 and violationTracked == True:
+            tVid = "urn:ngsild:TrafficViolation:IllegalParking:1"
         # Identify transportStationID with the vehicleID received and post
         dataToPost = {'id': transportStationIDs[index], 
                       'vID': data['vehicleid'],
@@ -136,7 +141,8 @@ async def receive_data():
                       'cFOID': None, 
                       "dtLastObserved":  None, 
                       'location': tSlocations[index], 
-                      'name': data['station_name']}
+                      'name': data['station_name'],
+                      'tVid': tVid}
         # Post the received data to the edge controller
         await post_to_edge_controller(dataToPost)
 
@@ -170,6 +176,7 @@ async def post_periodically_async():
     global tSlocations
     global pause_flag_0
     global pause_flag_5
+    global violationTracked
 
     edge_controller_url = 'http://localhost:5002/receive_crowd_data'  # Adjust the URL as needed
     second_endpoint_url = 'http://localhost:5002/receive_station_data'
@@ -190,11 +197,14 @@ async def post_periodically_async():
 
             # Get the next value from the cycle
             dynamic_data = {'id': crowdFlowObservedIDs[j], 'value': dynamic_value,
-                            'dateObserved': datetime.datetime.now().isoformat()}
+                            'dateObserved': datetime.datetime.now().isoformat(), 'station': None}
 
             # Add the task to the list
             tasks.append(post_async(session, edge_controller_url, dynamic_data))
 
+            tVid = "_"    
+            if j == 14 and violationTracked == True : tVid = "urn:ngsild:TrafficViolation:IllegalParking:1"
+            
             # (+) add for loop for all transportStationIDs (and cFOIDs)
             tasks.append(post_async(session, second_endpoint_url, {'id': transportStationIDs[j],
                                                                    'vID': None,
@@ -202,7 +212,8 @@ async def post_periodically_async():
                                                                    'cFOID': crowdFlowObservedIDs[j],
                                                                    "dtLastObserved": datetime.datetime.now().isoformat(),
                                                                    'location': tSlocations[j],
-                                                                   'name': transportStationNames[j]}))
+                                                                   'name': transportStationNames[j],
+                                                                   'tVid': tVid}))
 
         # Wait for all tasks to complete
         await asyncio.gather(*tasks)
@@ -216,6 +227,7 @@ async def run_when_paused(session):
     global shared_dynamic_data
     global transportStationNames
     global pause_flag_5
+    global violationTracked
 
     edge_controller_url = 'http://localhost:5002/receive_crowd_data'  # Adjust the URL as needed
     second_endpoint_url = 'http://localhost:5002/receive_station_data'
@@ -224,14 +236,15 @@ async def run_when_paused(session):
 
     if(stationName == transportStationNames[0]):
         await post_async(session, edge_controller_url, {'id': crowdFlowObservedIDs[0], 'value': 10,
-                                                  'dateObserved': datetime.datetime.now().isoformat()})
+                                                  'dateObserved': datetime.datetime.now().isoformat(), 'station': None})
         await post_async(session, second_endpoint_url, {'id': transportStationIDs[0],
                                                                    'vID': None,
                                                                    "dtLastReported": None,
                                                                    'cFOID': crowdFlowObservedIDs[0],
                                                                    "dtLastObserved": datetime.datetime.now().isoformat(),
                                                                    'location': tSlocations[0],
-                                                                   'name': transportStationNames[0]})
+                                                                   'name': transportStationNames[0],
+                                                                   'tVid': "_"})
         
     if(stationName == transportStationNames[5]):
         frame_width = 852
@@ -308,14 +321,15 @@ async def run_when_paused(session):
                 # else: bus_detection = False
 
                 await post_async(session, edge_controller_url, {'id': crowdFlowObservedIDs[5], 'value': len(detections_0),
-                                                        'dateObserved': datetime.datetime.now().isoformat()})
+                                                        'dateObserved': datetime.datetime.now().isoformat(), 'station': None})
                 await post_async(session, second_endpoint_url, {'id': transportStationIDs[5],
                                                                         'vID': None,
                                                                         "dtLastReported": None,
                                                                         'cFOID': crowdFlowObservedIDs[5],
                                                                         "dtLastObserved": datetime.datetime.now().isoformat(),
                                                                         'location': tSlocations[5],
-                                                                        'name': transportStationNames[5]})
+                                                                        'name': transportStationNames[5],
+                                                                        'tVid': "_"})
                 
                 
                 zone.trigger(detections = detections_0)
@@ -336,7 +350,16 @@ async def run_when_paused(session):
                                                                                 'plate': "AXR1056",
                                                                                 'stationName': "Intracom",
                                                                                 'location': tSlocations[14]})
-
+        await post_async(session, second_endpoint_url, {'id': transportStationIDs[14],
+                                                        'vID': None,
+                                                        "dtLastReported": None,
+                                                        'cFOID': crowdFlowObservedIDs[14],
+                                                        "dtLastObserved": datetime.datetime.now().isoformat(),
+                                                        'location': tSlocations[14],
+                                                        'name': transportStationNames[14],
+                                                        'tVid': "urn:ngsild:TrafficViolation:IllegalParking:1"})
+        violationTracked = True
+        
         cap.release()
         cv2.destroyAllWindows()
 

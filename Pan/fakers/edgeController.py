@@ -138,6 +138,7 @@ async def receive_station_data():
     tSid = data['id']
     tSlocation = data['location']
     tSname = data['name']
+    violationId = data['tVid']
 
     transportStationData= {
         "id": tSid,
@@ -166,6 +167,10 @@ async def receive_station_data():
             "value": [
                 "bus"
             ]
+        },
+        "trafficViolation": {
+            "type": "TrafficViolation",
+            "value": violationId
         }
     }
 
@@ -223,8 +228,18 @@ async def receive_crowd_data():
     cFOid = data['id']
     cFOpc = data['value']
     cFOdatetime = data['dateObserved']
+    cFOstation = data['station']
     cFObool = False
     if(int(cFOpc) > 20): cFObool = True
+    type_of_measuremnt = cFOid.split(':')[3]
+    id_number = cFOid.split(':')[4]
+
+    if type_of_measuremnt != "Bus":
+        cFOstation = None
+        
+    if(cFObool == True and type_of_measuremnt == "Bus"):
+        await handle_request({'notify': True, 'message': f'Bus {id_number} is congested'},
+                              "http://localhost:3000/forward_notification")
 
     # Create payload
     crowdFlowObservedData = {
@@ -244,9 +259,14 @@ async def receive_crowd_data():
         "peopleCount": {
             "type": "Property",
             "value": cFOpc
+        },
+        "name":{ 
+            "type": "Property",
+            "value": cFOstation
         }
     }
 
+    print(crowdFlowObservedData)
     extData = await get_from_endpoint("http://localhost:5003/entities"+'/'+str(cFOid))
     maxVersion = 0
     if extData is not None:

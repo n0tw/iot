@@ -1,3 +1,4 @@
+import datetime
 import torch
 TORCH_VERSION = ".".join(torch.__version__.split(".")[:2])
 CUDA_VERSION = torch.__version__.split("+")[-1]
@@ -109,9 +110,9 @@ m=0
 max_people = 0
 processing_video = False 
 
-def send_data(max_people, locations):
+def send_data(locations):
     edge_controller_url = 'http://localhost:5002/receive_bus_data' 
-    data = {"max_value": max_people, "locations": locations[0]['Location'], "vehicleid":vehicleid, "crowdflowid": crowdflowid}
+    data = {"locations": locations[0]['Location'], "vehicleid":vehicleid, "crowdflowid": crowdflowid}
 
     try:
         response = requests.post(edge_controller_url, json=data)
@@ -120,7 +121,7 @@ def send_data(max_people, locations):
     except requests.exceptions.RequestException as e:
         print(f"Error sending data: {e}")
 
-def send_to_station(station_info ):
+def send_to_station(max_people ,station_info):
     station_url = 'http://localhost:5001/receive_data'
     data = {"vehicleid": vehicleid, "station_name": station_info[0][0]['Station'], "station_location": station_info[1][0]["Station's Location"]}
 
@@ -129,6 +130,17 @@ def send_to_station(station_info ):
         response.raise_for_status()
         print("Data sent successfully.")
 
+    except requests.exceptions.RequestException as e:
+        print(f"Error sending data: {e}")
+    
+    edge_controller_crowd_url = 'http://localhost:5002/receive_crowd_data' 
+    crowd_data = {'id': crowdflowid, 'value': max_people, 'dateObserved': datetime.datetime.now().isoformat(),
+                   'station':station_info[0][0]['Station']}
+
+    try:
+        response = requests.post(edge_controller_crowd_url, json=crowd_data)
+        response.raise_for_status()
+        print("Data sent successfully.")
     except requests.exceptions.RequestException as e:
         print(f"Error sending data: {e}")
 
@@ -218,15 +230,15 @@ def faker(station, location):
         max_people +=random_integer
     else:
         max_people=0
-    send_data(int(max_people), location)
-    send_to_station(station)
+    send_data(location)
+    send_to_station(int(max_people), station)
     print(max_people)
 
 def start_video(station, location):
     cap = cv2.VideoCapture(SUBWAY_VIDEO_PATH)
     global processing_video, max_people
     frame_counter = 0
-    send_to_station(station)
+    send_to_station(int(max_people), station)
     if not cap.isOpened():
         print("Error: Could not open video.")
         return
@@ -257,7 +269,8 @@ def start_video(station, location):
     else:
         max_people=0
 
-    send_data(int(max_people), location)
+    send_to_station(int(max_people), station)
+    send_data(location)
 
     print(max_people)
 
