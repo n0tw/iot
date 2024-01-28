@@ -124,7 +124,7 @@ def send_data(locations):
 def send_to_station(max_people ,station_info):
     station_url = 'http://localhost:5001/receive_data'
     data = {"vehicleid": vehicleid, "station_name": station_info[0][0]['Station'], "station_location": station_info[1][0]["Station's Location"]}
-
+    print(data)
     try:
         response = requests.post(station_url, json=data)
         response.raise_for_status()
