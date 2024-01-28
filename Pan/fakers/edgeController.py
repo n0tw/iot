@@ -162,6 +162,22 @@ async def receive_station_data():
                 "coordinates": tSlocation
             }
         },
+        "dateObserved": {
+            "type": "DateTime",
+            "value": None
+        },
+        "crowdFlowObserved": {
+            "type": "CrowdFlowObserved",
+            "value": None
+        },
+        "dateLastReported": {
+            "type": "DateTime",
+            "value": None
+        },
+        "vehicleLastReported": {
+            "type": "Vehicle",
+            "value": None
+        },
         "stationType": {
             "type": "Property",
             "value": [
