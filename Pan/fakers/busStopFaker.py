@@ -48,7 +48,7 @@ transportStationNames = ["Ermou",
                         "1st Cemetery",
                         "Anthoupoli",
                         "OGA",
-                        "Aretha (to University)",
+                        "Aretha to University",
                         "Aretha",
                         "Intracom",
                         "Kotroni",
@@ -61,7 +61,7 @@ transportStationNames = ["Ermou",
                         "Mandreka",
                         "Tofalos Stadium",
                         "Haradros River",
-                        "University of Patras Chancellor's Office",
+                        "University of Patras Chancellors Office",
                         "Polytechnic",
                         "Conference Center",
                         "Physics Department",
@@ -131,7 +131,7 @@ async def receive_data():
         # Set the shared dynamic data based on received data
         set_shared_dynamic_data(data)
 
-        tvid = None
+        tVid = "_"
         if index == 14 and violationTracked == True:
             tVid = "urn:ngsild:TrafficViolation:IllegalParking:1"
         # Identify transportStationID with the vehicleID received and post
@@ -202,7 +202,7 @@ async def post_periodically_async():
             # Add the task to the list
             tasks.append(post_async(session, edge_controller_url, dynamic_data))
 
-            tvid = None    
+            tVid = "_"    
             if j == 14 and violationTracked == True : tVid = "urn:ngsild:TrafficViolation:IllegalParking:1"
             
             # (+) add for loop for all transportStationIDs (and cFOIDs)
@@ -244,7 +244,7 @@ async def run_when_paused(session):
                                                                    "dtLastObserved": datetime.datetime.now().isoformat(),
                                                                    'location': tSlocations[0],
                                                                    'name': transportStationNames[0],
-                                                                   'tVid': None})
+                                                                   'tVid': "_"})
         
     if(stationName == transportStationNames[5]):
         frame_width = 852
@@ -329,7 +329,7 @@ async def run_when_paused(session):
                                                                         "dtLastObserved": datetime.datetime.now().isoformat(),
                                                                         'location': tSlocations[5],
                                                                         'name': transportStationNames[5],
-                                                                        'tVid': None})
+                                                                        'tVid': "_"})
                 
                 
                 zone.trigger(detections = detections_0)

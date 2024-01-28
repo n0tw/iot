@@ -162,22 +162,6 @@ async def receive_station_data():
                 "coordinates": tSlocation
             }
         },
-        "dateObserved": {
-            "type": "DateTime",
-            "value": None
-        },
-        "crowdFlowObserved": {
-            "type": "CrowdFlowObserved",
-            "value": None
-        },
-        "dateLastReported": {
-            "type": "DateTime",
-            "value": None
-        },
-        "vehicleLastReported": {
-            "type": "Vehicle",
-            "value": None
-        },
         "stationType": {
             "type": "Property",
             "value": [
@@ -190,29 +174,48 @@ async def receive_station_data():
         }
     }
 
+    cont_resp = await get_from_endpoint(f"http://150.140.186.118:1026/v2/entities/{tSid}")
+    if (cont_resp is None or 'error' in cont_resp):
+        transportStationData['dateObserved']= {
+                "type": "DateTime",
+                "value": datetime.datetime.now().isoformat()
+            }
+        transportStationData['crowdFlowObserved']= {
+                "type": "CrowdFlowObserved",
+                "value": "FirstID"
+            }
+        transportStationData['dateLastReported']= {
+                "type": "DateTime",
+                "value": datetime.datetime.now().isoformat()
+            }
+        transportStationData['vehicleLastReported']= {
+                "type": "Vehicle",
+                "value": "FirstID"
+            }
+        
     if(data['vID'] == None):
         cFOid = data['cFOID']
         tSdatetimeObserved = data['dtLastObserved']
-        transportStationData['dateObserved'] = {
-                                                "type": "DateTime",
-                                                "value": tSdatetimeObserved
-                                                }
-        transportStationData['crowdFlowObserved'] = {
-                                                    "type": "CrowdFlowObserved",
-                                                    "value": cFOid
-                                                    }
+        transportStationData['dateObserved']= {
+                "type": "DateTime",
+                "value": tSdatetimeObserved
+            }
+        transportStationData['crowdFlowObserved']= {
+                "type": "CrowdFlowObserved",
+                "value": cFOid
+            }
 
     if(data['cFOID'] == None):
         vid = data['vID']
         tSdatetimeReported = data['dtLastReported']
-        transportStationData['dateLastReported'] = {
-                                                    "type": "DateTime",
-                                                    "value": tSdatetimeReported
-                                                    }
-        transportStationData['vehicleLastReported'] = {
-                                                        "type": "Vehicle",
-                                                        "value": vid
-                                                        }
+        transportStationData['dateLastReported']= {
+                "type": "DateTime",
+                "value": tSdatetimeReported
+            }
+        transportStationData['vehicleLastReported']= {
+                "type": "Vehicle",
+                "value": vid
+            }
     
     extData = await get_from_endpoint("http://localhost:5003/entities"+'/'+str(tSid))
     maxVersion = 0
