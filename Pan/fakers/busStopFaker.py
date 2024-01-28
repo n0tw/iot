@@ -34,7 +34,7 @@ crowdFlowObservedIDs = []
 transportStationIDs = []
 for i in range(1,33):
     crowdFlowObservedIDs.append("urn:ngsild:CrowdFlowObserved:Station:"+str(i))
-    transportStationIDs.append("urn:ngsild:Station:Station:"+str(i))
+    transportStationIDs.append("urn:ngsild:TransportStation:Station:"+str(i))
 
 transportStationNames = ["Ermou",
                         "Agiou Nikolaou",
