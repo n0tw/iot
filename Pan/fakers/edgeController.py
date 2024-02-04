@@ -248,6 +248,7 @@ async def receive_crowd_data():
     cFOpc = data['value']
     cFOdatetime = data['dateObserved']
     cFOstation = data['station']
+    cFOentityname = data['entityName']
     cFObool = False
     if(int(cFOpc) > 20): cFObool = True
     type_of_measuremnt = cFOid.split(':')[3]
@@ -282,6 +283,10 @@ async def receive_crowd_data():
         "name":{ 
             "type": "Property",
             "value": cFOstation
+        },
+        "alternateName":{ 
+            "type": "Property",
+            "value": cFOentityname
         }
     }
 

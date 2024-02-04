@@ -134,8 +134,10 @@ def send_to_station(max_people ,station_info):
         print(f"Error sending data: {e}")
     
     edge_controller_crowd_url = 'http://localhost:5002/receive_crowd_data' 
+    crowdFlowSplitted = crowdflowid.split(':')
+    idNumber = crowdFlowSplitted[-1]
     crowd_data = {'id': crowdflowid, 'value': max_people, 'dateObserved': datetime.datetime.now().isoformat(),
-                   'station':station_info[0][0]['Station']}
+                   'station':station_info[0][0]['Station'], 'entityName': f"Bus {idNumber}"}
 
     try:
         response = requests.post(edge_controller_crowd_url, json=crowd_data)

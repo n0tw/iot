@@ -197,7 +197,8 @@ async def post_periodically_async():
 
             # Get the next value from the cycle
             dynamic_data = {'id': crowdFlowObservedIDs[j], 'value': dynamic_value,
-                            'dateObserved': datetime.datetime.now().isoformat(), 'station': None}
+                            'dateObserved': datetime.datetime.now().isoformat(), 'station': None, 
+                            'entityName': transportStationNames[j]}
 
             # Add the task to the list
             tasks.append(post_async(session, edge_controller_url, dynamic_data))
@@ -236,7 +237,8 @@ async def run_when_paused(session):
 
     if(stationName == transportStationNames[0]):
         await post_async(session, edge_controller_url, {'id': crowdFlowObservedIDs[0], 'value': 10,
-                                                  'dateObserved': datetime.datetime.now().isoformat(), 'station': None})
+                                                  'dateObserved': datetime.datetime.now().isoformat(), 'station': None,
+                                                  'entityName': transportStationNames[0]})
         await post_async(session, second_endpoint_url, {'id': transportStationIDs[0],
                                                                    'vID': None,
                                                                    "dtLastReported": None,
@@ -321,7 +323,8 @@ async def run_when_paused(session):
                 # else: bus_detection = False
 
                 await post_async(session, edge_controller_url, {'id': crowdFlowObservedIDs[5], 'value': len(detections_0),
-                                                        'dateObserved': datetime.datetime.now().isoformat(), 'station': None})
+                                                        'dateObserved': datetime.datetime.now().isoformat(), 'station': None,
+                                                        'entityName': transportStationNames[5]})
                 await post_async(session, second_endpoint_url, {'id': transportStationIDs[5],
                                                                         'vID': None,
                                                                         "dtLastReported": None,
