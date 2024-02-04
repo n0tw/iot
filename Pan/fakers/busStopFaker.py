@@ -1,3 +1,4 @@
+import random
 import aiohttp
 import asyncio
 import itertools
@@ -103,7 +104,8 @@ tSlocations = [ [38.24674692664068, 21.73598679633868],
                 [38.29649522541104, 21.795133184452613]]
 
 # Iterator for cycling through the values
-values_iterator = itertools.cycle(['5', '20', '15'])
+#values_iterator = itertools.cycle(['5', '20', '15'])
+random_values = ['0', '2', '5', '8', '11', '15', '19', '23']
 
 # Define the endpoint to receive data
 @app.route('/receive_data', methods=['POST'])
@@ -170,6 +172,7 @@ async def post_to_edge_controller(data):
 async def post_periodically_async():
     # Use the shared dynamic data
     global values_iterator
+    global random_values
     global crowdFlowObservedIDs
     global transportStationIDs
     global transportStationNames
@@ -181,7 +184,7 @@ async def post_periodically_async():
     edge_controller_url = 'http://localhost:5002/receive_crowd_data'  # Adjust the URL as needed
     second_endpoint_url = 'http://localhost:5002/receive_station_data'
 
-    dynamic_value = next(values_iterator)
+    #dynamic_value = next(values_iterator)
 
     async with aiohttp.ClientSession() as session:
         tasks = []
@@ -196,7 +199,7 @@ async def post_periodically_async():
                 continue  # Skip the rest of the loop for j = 5 if paused
 
             # Get the next value from the cycle
-            dynamic_data = {'id': crowdFlowObservedIDs[j], 'value': dynamic_value,
+            dynamic_data = {'id': crowdFlowObservedIDs[j], 'value': random.choice(random_values),
                             'dateObserved': datetime.datetime.now().isoformat(), 'station': None, 
                             'entityName': transportStationNames[j]}
 
