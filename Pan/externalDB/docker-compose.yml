@@ -1,22 +1,22 @@
-version: '3.1'
+version: '3.8'
 
 services:
   mongodb:
-    image: mongo
-    container_name: my_mongodb
+    image: mongo:latest
     ports:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example_password
-    networks:
-      - my_network
 
-networks:
-  my_network:
-    driver: bridge
+  flask-app:
+    build: .
+    ports:
+      - "5003:5003"
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/externalDB
 
 volumes:
   mongodb_data:
+
