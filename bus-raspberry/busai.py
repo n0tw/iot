@@ -1,3 +1,4 @@
+import datetime
 import torch
 TORCH_VERSION = ".".join(torch.__version__.split(".")[:2])
 CUDA_VERSION = torch.__version__.split("+")[-1]
@@ -18,7 +19,6 @@ ultralytics.checks()
 import detectron2
 print("detectron2:", detectron2.__version__)
 
-
 import supervision as sv
 print("supervision", sv.__version__)
 
@@ -29,6 +29,7 @@ SUBWAY_VIDEO_PATH = "C:/Users/eugk/Documents/iot/project/iot_bus.mp4"
 from ultralytics import YOLO
 model = YOLO('yolov8s.pt')
 
+import asyncio
 import numpy as np
 import supervision as sv
 import cv2
@@ -40,7 +41,6 @@ import random
 import sys
 from flask import Flask, request
 
-
 ids = sys.argv[1:]
 
 # Check if ids are provided
@@ -48,7 +48,7 @@ if ids:
     print("Received ids:", ids)
 else:
     print("No ids provided.")
-    
+
 crowdflowid = ids[0]
 vehicleid= ids[1]
 
@@ -61,11 +61,22 @@ app = Flask(__name__)
 def handle_request():
     global Favierou_vid
     data = request.get_json()
-    Favierou_vid = int(data['favierou_vid'])
-    
-    if Favierou_vid == 1:
-        video_ended_event.set()
-    return 'Request handled successfully'
+    # Use request.args to get query parameters from the URL
+    favierou_vid_param = data['favierou_vid']
+
+    if favierou_vid_param is not None:
+        Favierou_vid = int(favierou_vid_param)
+        print("\n")
+        print("\n")
+        print(Favierou_vid)
+        print("\n")
+        print("\n")
+        if Favierou_vid == 1:
+            video_ended_event.set()
+        return 'Request handled successfully'
+    else:
+        # Handle the case where 'favierou_vid' parameter is not provided
+        return 'Missing "favierou_vid" parameter', 400
 
 class StoppableThread(threading.Thread):
     def __init__(self, *args, **kwargs):
@@ -99,10 +110,9 @@ m=0
 max_people = 0
 processing_video = False 
 
-def send_data(max_people, locations):
-    edge_controller_url = "http://edge-controller-url" 
-    data = {"max_value": max_people, "locations": locations[0]['Location'], "vehicleid":vehicleid, "crowdflowid": crowdflowid}
-    
+def send_location_only(locations):
+    edge_controller_url = 'http://localhost:5002/receive_bus_data' 
+    data = {"locations": locations[0]['Location'], "vehicleid":vehicleid}
     try:
         response = requests.post(edge_controller_url, json=data)
         response.raise_for_status()
@@ -110,15 +120,40 @@ def send_data(max_people, locations):
     except requests.exceptions.RequestException as e:
         print(f"Error sending data: {e}")
 
-def send_to_station(station_info ):
-    station_url = "http://station-url" 
+
+def send_data(locations):
+    edge_controller_url = 'http://localhost:5002/receive_bus_data' 
+    data = {"locations": locations[0]['Location'], "vehicleid":vehicleid, "crowdflowid": crowdflowid}
+
+    try:
+        response = requests.post(edge_controller_url, json=data)
+        response.raise_for_status()
+        print("Data sent successfully.")
+    except requests.exceptions.RequestException as e:
+        print(f"Error sending data: {e}")
+
+def send_to_station(max_people ,station_info):
+    station_url = 'http://localhost:5001/receive_data'
     data = {"vehicleid": vehicleid, "station_name": station_info[0][0]['Station'], "station_location": station_info[1][0]["Station's Location"]}
-    
+    print(data)
     try:
         response = requests.post(station_url, json=data)
         response.raise_for_status()
         print("Data sent successfully.")
 
+    except requests.exceptions.RequestException as e:
+        print(f"Error sending data: {e}")
+    
+    edge_controller_crowd_url = 'http://localhost:5002/receive_crowd_data' 
+    crowdFlowSplitted = crowdflowid.split(':')
+    idNumber = crowdFlowSplitted[-1]
+    crowd_data = {'id': crowdflowid, 'value': max_people, 'dateObserved': datetime.datetime.now().isoformat(),
+                   'station':station_info[0][0]['Station'], 'entityName': f"Bus {idNumber}"}
+
+    try:
+        response = requests.post(edge_controller_crowd_url, json=crowd_data)
+        response.raise_for_status()
+        print("Data sent successfully.")
     except requests.exceptions.RequestException as e:
         print(f"Error sending data: {e}")
 
@@ -130,11 +165,11 @@ def read_locations(file_path, start_row=None, end_row=None, skip_value=None):
 
         df = pd.read_excel(file_path, usecols=use_cols, skiprows=skiprows, nrows=nrows)
         df1 = pd.read_excel(file_path, usecols=[2], skiprows=skiprows, nrows=nrows)
-        
+
         if skip_value is not None:
             df = df[~df.iloc[:, 0].apply(lambda x: str(x) == str(skip_value))]
             df1 = df1[~df1.iloc[:, 0].apply(lambda x: str(x) == str(skip_value))]
-        
+
         locations = df.to_dict(orient='records')
         stations = df1.to_dict(orient='records')
 
@@ -173,8 +208,8 @@ def process_frame(frame: np.ndarray, _) -> np.ndarray:
     frame = zone_annotator.annotate(scene=frame)
     z = zone.trigger(detections=detections)
     if m==0:
-       max=sum(z)
-       m=1
+        max=sum(z)
+        m=1
     if sum(z)>max:
         max= sum(z)
     if len(z_1) == len(z):
@@ -183,14 +218,14 @@ def process_frame(frame: np.ndarray, _) -> np.ndarray:
                 max=max-1
             if z[i]==True and z_1[i]==False:
                 max=max+1
- 
-    print("δετεψτιονσ", max )
+
+    print("Detections", max )
     z_1= z
 
     additional_info_text = f"People inside: {max}"
-    
+
     cv2.putText(frame, additional_info_text, (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 6, cv2.LINE_AA)
-    
+
     #sv.show_frame_in_notebook(frame, (16, 16))
     return frame, max
 
@@ -203,21 +238,20 @@ if not cap.isOpened():
 def faker(station, location):
     global max_people
     random_integer = random.randint(-30, 30)
-    
+
     if max_people + random_integer>=0:
         max_people +=random_integer
     else:
         max_people=0
-    send_data(int(max_people), location)
-    send_to_station(station)
+    send_data(location)
+    send_to_station(int(max_people), station)
     print(max_people)
-
 
 def start_video(station, location):
     cap = cv2.VideoCapture(SUBWAY_VIDEO_PATH)
     global processing_video, max_people
     frame_counter = 0
-    send_to_station(station)
+    send_to_station(int(max_people), station)
     if not cap.isOpened():
         print("Error: Could not open video.")
         return
@@ -242,19 +276,26 @@ def start_video(station, location):
 
         if frame_counter == 20:
             frame_counter = 0
-            
+
     if max_people + max>=0:
         max_people +=max
     else:
         max_people=0
-    
-    send_data(int(max_people), location)
-    
+
+    send_to_station(int(max_people), station)
+    send_data(location)
+
     print(max_people)
 
     cap.release()
     cv2.destroyAllWindows()
 
+def start_flask_app():
+    app.run(threaded=True, port=5000)
+
+# Start the Flask app on a different thread
+flask_thread = threading.Thread(target=start_flask_app)
+flask_thread.start()
 
 def update_locations():
     global row, processing_video, video_ended_event
@@ -269,13 +310,14 @@ def update_locations():
             end_row=row,
             skip_value="-"
         )
-        
+
         if result is not None:
             locations, station = result
             print(locations)
-            t=3
+            send_location_only(locations)
+            t=2
             if station:
-                t=10
+                t=3
                 print("station[0]", station[0])
                 if station[0] == [{'Station': 'Ermou'}]:
                     print(station)
@@ -289,13 +331,13 @@ def update_locations():
                     video_thread.join()
 
                     processing_video = False
-                if station[0] == [{'Station': 'Favierou'}]:
+                elif station[0] == [{'Station': 'Favierou'}]:
                     faker(station, locations)
                     video_ended_event.wait()
                     video_ended_event.clear() 
                 else:
                     faker(station, locations)
-            
+
             row += 1
         else:
             print("Error reading locations. Stopping update.")
