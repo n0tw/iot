@@ -22,7 +22,7 @@ const readDataByTime = async(req, res, entityId, initYear, initMonth, initDay, i
   endYear, endMonth, endDay, endHour, endMinute, endSecond, tz_offset) => {
   try {
     // Make an HTTP request to your Flask API endpoint
-    const response = await axios.get(`http://localhost:5000/entities_by_time/${entityId}/${initYear}/${initMonth}/${initDay}/${initHour}/${initMinute}/${initSecond}/${endYear}/${endMonth}/${endDay}/${endHour}/${endMinute}/${endSecond}/${tz_offset}`);
+    const response = await axios.get(`http://localhost:5003/entities_by_time/${entityId}/${initYear}/${initMonth}/${initDay}/${initHour}/${initMinute}/${initSecond}/${endYear}/${endMonth}/${endDay}/${endHour}/${endMinute}/${endSecond}/${tz_offset}`);
 
     // Retrieve data from the Flask API response
     const responseData = response.data;
@@ -67,8 +67,8 @@ const readDataByTime = async(req, res, entityId, initYear, initMonth, initDay, i
       const data = await readDataByTime(
         req,
         res,
-        "urn:ngsi-ld:CrowdFlowObserved:Valladolid_1",
-        2018,3,11,15,31,2,2023,4,5,1,5,2,0
+        "urn:ngsild:CrowdFlowObserved:Station:5",
+        2018,3,11,15,31,2,2024,4,5,1,5,2,0
         );
     } catch (error) {
       console.error('Error fetching data from MongoDB:', error);

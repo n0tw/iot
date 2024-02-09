@@ -65,7 +65,7 @@ def forward_notification():
 if __name__ == '__main__':
     # Run the Flask app in a separate thread
     import threading
-    threading.Thread(target=app.run, kwargs={'port': 3000}).start()
+    threading.Thread(target=app.run, kwargs={'port': 5005}).start()
 
     # Run the scheduled job in the main thread
     while True:

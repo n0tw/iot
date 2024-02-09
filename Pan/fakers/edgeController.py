@@ -261,7 +261,7 @@ async def receive_crowd_data():
         
     if(cFObool == True and type_of_measuremnt == "Bus"):
         await handle_request({'notify': True, 'message': f'Bus {id_number} is congested'},
-                              "http://localhost:3000/forward_notification")
+                              "http://localhost:5005/forward_notification")
 
     # Create payload
     crowdFlowObservedData = {

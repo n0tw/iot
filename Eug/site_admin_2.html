@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin front-end</title>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            margin-left: 20px;
+            margin-right: 20px;
+            margin-top: 100px;
+            margin-bottom: 100px;
+            display: flex;
+            flex-direction: column; /* Set the direction to column */
+            align-items: center; /* Center items horizontally */
+            background: linear-gradient(to bottom, #CCCCCC, #FFFFFF);
+        }
+        .map-container {
+            width: 100%; /* Set the width to 100% for full width */
+            height: 400px; /* Adjust the height as needed */
+        }
+        #chart-table-container {
+            display: flex; /* Set the display to flex for side-by-side layout */
+            width: 80%; /* Adjust the width of the container */
+            justify-content: space-between; /* Add space between the chart and table */
+            margin-top: 20px; /* Add margin at the top */
+        }
+        #chart-container, #data-table-container {
+            width: 45%; /* Adjust the width of the containers */
+            margin: 10px;
+        }
+        #chart-container {
+            width: 80%; /* Adjust the width of the chart container */
+        }
+        #data-table {
+            border-collapse: collapse;
+            width: 100%; /* Set the width of the tables to 100% */
+            position: relative;
+        }
+        #data-table th, #data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        #data-table th {
+            background-color: #f2f2f2;
+        }
+        #warnings-title {
+            text-align: center; /* Center the title */
+            margin-bottom: 10px; /* Add margin below the title */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="map-container" id="map"></div>
+
+    <div id="chart-table-container">
+        <div id="chart-container">
+            <canvas id="myChart"></canvas>
+        </div>
+
+        <div id="data-table-container">
+            <h3 id="warnings-title">Warnings</h3>
+            <table id="data-table">
+                <thead>
+                    <tr>
+                        <th>Element</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <table id="bus-table">
+        <thead>
+            <!-- <tr>
+                <th>Buses on the Road</th>
+                <th>Last Station</th>
+                <th>Time Since Last Seen</th>
+            </tr> -->
+        </thead>
+        <tbody id="bus-table-body"></tbody>
+    </table>
+    <script>
+        let buses = [];
+        let stations = [];
+        var busStations = {};
+        var busesvar = {};
+        var busvarcount =0;
+        const brokerIP = '150.140.186.118';
+        const brokerPort = 9001;
+        const brokerPath = '/mqtt';
+        const clientId = 'client_' + Math.random().toString(16).substr(2, 100);
+        
+        const client = new Paho.MQTT.Client(brokerIP,brokerPort, clientId);
+        client.debug = true;
+        
+
+        function onConnect() {
+            console.log('Connected to MQTT broker');
+            stations.forEach(element => {
+                subscribe("json/busstopmonitoring/" + String(element.crowdflowid.value));
+                subscribe("json/busstopmonitoring/" + String(element.id));
+            });
+
+            buses.forEach(element => {
+                subscribe("json/busstopmonitoring/"+String(element.crowdflowid.value));
+                subscribe("json/busstopmonitoring/" + String(element.id));
+            });
+        }
+
+        function subscribe(id, attribute) {
+            const topic = `${id}`;
+            console.log("Subscribing to topic:", topic);
+            client.subscribe(topic);
+        }
+
+        function onFailure(err) {
+            console.error('Failed to connect to MQTT broker:', err.errorMessage);
+        }
+
+        function onConnectionLost(responseObject) {
+            if (responseObject.errorCode !== 0) {
+                console.error('Connection lost:', responseObject.errorMessage);
+            }
+
+        }
+
+        function onMessageArrived(message) {
+            //console.log(`Received message on topic ${message.destinationName}: ${message.payloadString}`);
+            const payload = JSON.parse(message.payloadString);
+            const type= payload.type
+            console.log(type);
+            if(type=="TransportStation"){
+                updateStationData(message.destinationName, payload);
+            }else if (type=="CrowdFlowObserved"){
+                updateCrowdData(message.destinationName, payload);
+            }else if (type=="Vehicle"){
+                updateBusLocation(message.destinationName, payload);
+            }
+        }
+
+        client.onConnectionLost = onConnectionLost;
+        client.onMessageArrived = onMessageArrived;
+        function initMap() {
+            console.log('Map initialized');
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 38.24630509364979, lng: 21.735171687989045 },
+                zoom: 14
+            });
+            document.getElementById('map').style.width = '800px';
+            infoWindow = new google.maps.InfoWindow();
+
+            var markerSize = new google.maps.Size(30, 30);
+            
+
+            for (var i = 0; i < stations.length; i++) {
+                const location = stations[i].location.value;
+                console.log("typeof(stations), typeof(stations[1])",typeof(stations), typeof(stations[1]))
+                busStations['busStation' + i] = new google.maps.Marker({
+                    position: { lat:location.coordinates[0], lng:location.coordinates[1] },
+                    map: map,
+                    title: 'Bus Station ' + String(i),
+                    icon: {
+                        url: 'Canberra_Bus_icon.svg.png',
+                        scaledSize: markerSize
+                    }
+                });
+                
+            }
+            
+        }
+
+        function addBusMarkers(i,bus) {
+            var markerSize = new google.maps.Size(30, 30);
+            console.log(bus);
+            const location = bus.location.value;
+            const lat = parseFloat(location.coordinates.split(',')[0]);
+            const lng = parseFloat(location.coordinates.split(',')[1]);
+            busvarcount += 1;
+            busesvar[i] = new google.maps.Marker({
+                id: bus.id,
+                position: new google.maps.LatLng(lat, lng) ,
+                map: map,
+                title: 'Bus ' + String(i+1),
+                icon: {
+                    url: 'bus.png',
+                    scaledSize: markerSize
+                }
+            });
+            console.log(`busesvar[${i}].position`, busesvar[i].position);
+
+            busesvar[i].addListener('click', (function (i, busId) {
+                return function () {
+                    console.log("busId", busId);
+                    getbusLastUpdate(busId);
+                    var contentString = '<div id="content">' +
+                        '<h6 id="firstHeading" class="firstHeading">Bus'+String(i+1)+'</h6>' +
+                        '<p id ="info"></p>' +
+                        '</div>';
+
+                    // Set the content and open the info window
+                    infoWindow.setContent(contentString);
+                    infoWindow.open(map, busesvar[i]);
+                };
+            })(i, busesvar[i].id));
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('http://127.0.0.1:8080/getBusInfo')
+                .then(response => response.json())
+                .then(data => {
+                    buses =data;
+
+                })
+                .catch(error => console.error('Error fetching data:', error));
+
+            fetch('http://127.0.0.1:8080/getStationInfo')
+                .then(response => response.json())
+                .then(data => {
+                    initMap(); 
+                    stations = data;
+                    client.connect({
+                        onSuccess: onConnect,
+                        onFailure: onFailure,
+                        useSSL: false,
+                    });
+                    initMap(); 
+                    //console.log(data);
+                    
+                    
+                })
+                .catch(error => console.error('Error fetching data:', error));
+                
+            
+        });
+        
+        //console.log("data", stations);
+        
+        var map;
+        var bus1;
+        //var program = document.getElementById('program');
+        
+        async function getbusLastUpdate(busid) {
+            try {
+                const response = await fetch(`http://localhost:8080/getBusPC?id=${busid}`);
+                const data = await response.json();
+                document.getElementById("info").innerText = `Last update: ${data.lastStation.value} at: ${data.dateTime.value['@value']}` + "\nPeople Count: " + data.peopleCount.value;
+            } catch (error) {
+                console.error('Error fetching location:', error.message);
+            }
+        }
+            
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const myChart = new Chart(ctx, {
+            type: 'bar', // Change the chart type to 'bar'
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'People Count in stations',
+                    data: [],
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)', // Bar color with alpha (transparency)
+                    borderColor: 'rgba(75, 192, 192, 1)', // Border color
+                    borderWidth: 1, // Border width
+                }]
+            },/* 
+            options: {
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom'
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            } */
+        });
+
+        
+        const stationDataMap = [];
+
+        function updateCrowdData(topic, payload){
+            
+            console.log("peopleCount congested",payload.peopleCount.value, payload.congested.value);
+            peopleCount = payload.peopleCount.value;
+            congested = payload.congested.value;
+            name = payload.alternateName.value;
+            if (name.slice(0, 3) !=="Bus"){
+                console.log("Station crowdflow");
+                existingIndex = stationDataMap.findIndex(entry => entry.name === name);
+                
+                if (existingIndex !== -1) {
+                    const dataIndex = stationDataMap[existingIndex].dataIndex;
+                    myChart.data.datasets[0].data[dataIndex] = peopleCount;
+                }
+                else{
+                    stationDataMap.push({
+                        name: name,
+                        dataIndex: myChart.data.labels.length,
+                    });
+                    myChart.data.labels.push(name);
+                    myChart.data.datasets[0].data.push(peopleCount);
+                }
+
+                myChart.update();
+                
+            }else{
+                id = payload.id;
+                busesIndex = buses.findIndex(entry => entry.crowdflowid === id);
+                busesvarIndex =-1;
+                for (var i = 0; i < busvarcount; i++) {
+                    if (busesvar[i] && busesvar[i].crowdflowid === id) {
+                        busesvarIndex= i;
+                    }
+                }
+                
+            }
+            if (name.slice(0, 3) !=="Bus" ||busesvarIndex!=-1 ){
+                tableBody = document.getElementById('table-body');
+                existingIndex = Array.from(tableBody.rows).findIndex(entry =>
+                    entry.cells[0].textContent === name && entry.cells[1].textContent === "congested"
+                );
+                if(congested==true && existingIndex === -1){
+
+                    
+                    const newRow = tableBody.insertRow(0);
+                    const cell1 = newRow.insertCell(0);
+                    const cell2 = newRow.insertCell(1);
+                    cell1.textContent = name;
+                    cell2.textContent = "congested";
+                    if (tableBody.rows.length==10){
+                        tableBody.deleteRow(-1);
+                    }
+                }
+                if (congested==false && existingIndex !== -1){
+                    tableBody.deleteRow(existingIndex);
+                }
+            }
+            
+        }
+        function updateStationData(topic, payload){
+            stationName = payload.name.value;
+            tableBody = document.getElementById('table-body');
+            const existingIndex = Array.from(tableBody.rows).findIndex(entry =>
+                entry.cells[0].textContent === stationName && entry.cells[1].textContent === "Illegal parking"
+            );
+
+            if(payload.trafficViolation.value!=="_" && existingIndex === -1){    
+                console.log("payload.trafficViolation",payload.trafficViolation);
+                const newRow = tableBody.insertRow(0);
+                const cell1 = newRow.insertCell(0);
+                const cell2 = newRow.insertCell(1);
+                cell1.textContent = stationName;
+                //console.log("data[i].illparking",illparking);
+                cell2.textContent = "Illegal parking";
+                if (tableBody.rows.length==10){
+                    tableBody.deleteRow(-1);
+                }
+            }
+            if (payload.trafficViolation.value == "_" && existingIndex !== -1){
+                tableBody.deleteRow(existingIndex);
+
+            }
+
+        }
+
+        function updateBusLocation (topic, payload){
+            id = payload.id;
+            busesIndex = buses.findIndex(entry => entry.id === id);
+            busesvarIndex =-1;
+            for (var i = 0; i < busvarcount; i++) {
+                if (busesvar[i] && busesvar[i].id === id) {
+                    busesvarIndex= i;
+                }
+            }
+            if (busesvarIndex==-1){
+                addBusMarkers(i,buses[busesIndex]);
+                console.log("busesvar.length",busvarcount);
+            }
+
+            console.log("hhhhhhh ", busesIndex);
+
+            loc = payload.location.value;
+            const lat = parseFloat((loc.coordinates).split(',')[0]);
+            const lng = parseFloat((loc.coordinates).split(',')[1]);
+            console.log(lat, lng, typeof(lat), loc, typeof(loc));
+            (busesvar[busesIndex]).setPosition(new google.maps.LatLng(lat, lng)); 
+            //console.log(busesvar[Number(n-1)].position.lat, busesvar[Number(n-1)].position.lng);
+            //map.setCenter(new google.maps.LatLng(lat, lng));
+        }
+
+    </script>
+    
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA8UuMACOY60siOk58pGAyDzmyjhzIOGYk&callback=initMap&libraries=places,geometry&solution_channel=GMP_QB_commutes_v2_c" async defer></script>
+    </body>
+</html>
+    
