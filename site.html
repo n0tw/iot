@@ -12,18 +12,35 @@
     <link rel="stylesheet" type="text/css" href="styles.css">
     <style>
     .info {
-        display: flex;
-        justify-content: center;
-        margin-top: 20px; 
-        padding-bottom: 5%;
-    }
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center items vertically */
+    align-items: center; /* Center items horizontally */
+    padding-bottom: 5%;
+    position: relative;
+}
 
-    #content_space {
-        /* Styles for content_space */
-    }
+#bus-table {
+    border-collapse: collapse;
+    margin-top: 20px; /* Add some space between the table and content_space */
+    text-align: left; /* Center table contents */
+}
 
-    #bus-table-body {
-        /* Styles for bus-table-body */
+#bus-table th, #bus-table td {
+    border: 1px solid #ddd;
+    /* background-color: rgba(255, 255, 255, 1); */
+
+    padding: 8px;
+}
+
+    
+#content_space {
+    width: 80%; /* Adjust width as needed */
+    height: 40px; /* Set a fixed height or adjust as needed */
+    text-align: center;
+}
+    #bus-table{
+        visibility: hidden;
     }
     </style>
       
@@ -70,8 +87,23 @@
             
             </div>
             <div class="info">
-                <div id="content_space"></div>
-                <tbody id="bus-table-body"></tbody>
+                    <div id="content_space"></div>
+                    <table id="bus-table">
+                        <thead>
+                            <tr>
+                                <!-- <th>Bus Stations</th>
+                                <th>Time schedule</th> -->
+                                <!-- <th>5:35 - 6:00</th>
+                                <th>7:35 - 8:00</th>
+                                <th>10:35 - 11:00</th>
+                                <th>13:35 - 14:00</th>
+                                <th>16:35 - 17:00</th>
+                                <th>19:35 - 20:00</th>
+                                <th>22:35 - 23:00</th> -->
+                            </tr> 
+                        </thead>
+                        <tbody id="bus-table-body"></tbody>
+                    </table>
             </div>
         </div>
 
@@ -234,8 +266,8 @@ function addBusMarkers(i,bus) {
     });
 
     function initializetable(data){
-        //document.getElementById("bus-table-body").style.visibility = "visible";
-        const tableBody = document.getElementById('content_space');
+        document.getElementById("bus-table").style.visibility = "visible";
+        const tableBody = document.getElementById('bus-table-body');
 
         tableBody.innerHTML = '';
         if (time!= null){
@@ -387,15 +419,13 @@ function addBusMarkers(i,bus) {
             console.log("busesvar.length",busvarcount);
         }
 
-        len =("urn:ngsild:Vehicle:Bus:").length;
-        n = (id).slice(len, id.length);
-        console.log("hhhhhhh ",n);
+        console.log("hhhhhhh ", busesIndex);
 
         loc = payload.location.value;
         const lat = parseFloat((loc.coordinates).split(',')[0]);
         const lng = parseFloat((loc.coordinates).split(',')[1]);
         console.log(lat, lng, typeof(lat), loc, typeof(loc));
-        (busesvar[Number(n-1)]).setPosition(new google.maps.LatLng(lat, lng));
+        (busesvar[busesIndex]).setPosition(new google.maps.LatLng(lat, lng));
     }
         
 
