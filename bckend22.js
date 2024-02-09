@@ -64,7 +64,7 @@ const transporter = nodemailer.createTransport({
     service: 'hotmail',
     auth: {
       user: 'evgenia.123@hotmail.com',
-      pass: '6ab]~+@^@2Ta5l96VV32wgw9FvO/R|_8',
+      pass: '-',
     },
     tls: {
         rejectUnauthorized: false
