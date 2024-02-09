@@ -109,16 +109,7 @@ class EntitiesByTimeResource(Resource):
                                                 }):
                 data.append(existing_entity)
 
-            if len(list(collection.find({
-                                    "dateObserved.value.@value": {
-                                        "$gte": dt.datetime(initYear, initMonth, initDay, 
-                                                            initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
-                                        "$lt": dt.datetime(endYear, endMonth, endDay, 
-                                                            endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
-                                    },
-                                    "id": entityId
-                                    }
-                                    ))) == 0:
+            if len(data) == 0:
                 return jsonify({'message': f'Entity with ID {entityId} or specific DateTime values not found'}), 404
             
             return jsonify({'message': f'Entity with ID {entityId} received', 'data': json.loads(json_util.dumps(data))})

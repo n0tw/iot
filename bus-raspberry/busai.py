@@ -112,7 +112,7 @@ processing_video = False
 
 def send_data(locations):
     edge_controller_url = 'http://localhost:5002/receive_bus_data' 
-    data = {"locations": locations[0]['Location'], "vehicleid":vehicleid, "crowdflowid": crowdflowid}
+    data = {"locations": locations[0]['Location'], "vehicleid":vehicleid, "crowdflowid": crowdflowid, "busnumber": "601"}
 
     try:
         response = requests.post(edge_controller_url, json=data)

@@ -4,7 +4,7 @@ import requests
 context_broker_url = "http://150.140.186.118:1026/v2/entities"
 
 # Define the entity ID you want to delete
-entity_id_to_delete = "urn:ngsild:CrowdFlowObserved:Bus:1"
+entity_id_to_delete = "urn:ngsild:Vehicle:Bus:5"
 
 # Define the entity type you want to delete
 entity_type_to_delete = "Vehicle"

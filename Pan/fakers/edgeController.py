@@ -67,6 +67,7 @@ async def receive_bus_data():
     vplate = "LICENCE PLATE"
     vdatetimeObs = datetime.datetime.now().isoformat()
     vcFOid = data.get('crowdflowid') 
+    vBusNumber = data.get('busnumber')
 
     vehicleData = {
         "id": vid,
@@ -102,6 +103,10 @@ async def receive_bus_data():
         "vehicleType": {
             "type": "Property",
             "value": "bus"
+        },
+        "description": {
+            "type": "Property",
+            "value": vBusNumber
         }
     }
     if vcFOid is not None:
