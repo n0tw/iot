@@ -326,55 +326,6 @@ const fData = async () => {
 fData();
 
 
-
-/* io.on('connection', (socket) => {
-    console.log('Client connected');
-
-    setInterval(async () => {
-        //updateStationData(); 
-        //socket.emit('update', stationData);
-        try {
-            var r;
-            await updateStationData();
-    
-            for (const station of stations) {
-                r = Math.floor(Math.random() * 100);
-                const entityId = await readEntityAttribute(station.id, 'crowdFlowObserved');
-                console.log('Updating people count. Entity ID:', entityId, 'Updated Value:', r);
-                //await changePeopleCount(entityId, r);
-            }
-    
-            socket.emit('update', stationData);
-        } catch (error) {
-            console.error('Error in setInterval:', error);
-        }
-    }, 6000);
-
-    setInterval(async () => {
-        //updateBusData();
-        //socket.emit('busupdate', busData);
-        try {
-            var r;
-            await updateBusData();
-    
-            for (const bus of buses) {
-                r = Math.floor(Math.random() * 100);
-                const entityId = await readEntityAttribute(bus.id, 'crowdFlowObserved');
-                console.log('Updating people count. Entity ID:', entityId, 'Updated Value:', r);
-                //await changePeopleCount(entityId, r);
-            }
-    
-            socket.emit('busupdate', busData);
-        } catch (error) {
-            console.error('Error in setInterval:', error);
-        }
-    }, 3000);
-
-    socket.on('disconnect', () => {
-        console.log('Client disconnected');
-    });
-});
- */
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

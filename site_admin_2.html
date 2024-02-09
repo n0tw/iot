@@ -174,47 +174,7 @@
                 });
                 
             }
-            /* for (var i = 0; i < buses.length; i++) {
-                if (buses[i] ==null){
-                    continue;
-                }
-                //bus = parseFloat(buses[i])
-                //console.log("typeof(buses), typeof(buses[1])",typeof(buses), typeof(buses[1]))
-                const location = buses[i].location.value;
-                //console.log(buses[i].location.)
-                
-                const lat = parseFloat((location.coordinates).split(',')[0]);
-                const lng = parseFloat((location.coordinates).split(',')[1]);
-                //lat = 
-                //console.log("lat lng", parseFloat(location.coordinates[0]), parseFloat(location.coordinates[1]), typeof(location.coordinates[0]));
-                console.log("lat lng", lat, lng, typeof(lat));
-                busesvar[i] = new google.maps.Marker({
-                    id: buses[i].id,
-                    position: new google.maps.LatLng(lat, lng) ,
-                    map: map,
-                    title: 'Bus ' + String(i+1),
-                    icon: {
-                        url: 'bus.png',
-                        scaledSize: markerSize
-                    }
-                });
-                console.log(`busesvar[${i}].position`, busesvar[i].position);
-
-                busesvar[i].addListener('click', (function (i, busId) {
-                    return function () {
-                        console.log("busId", busId);
-                        getbusLastUpdate(busId);
-                        var contentString = '<div id="content">' +
-                            '<h6 id="firstHeading" class="firstHeading">Bus'+String(i+1)+'</h6>' +
-                            '<p id ="info"></p>' +
-                            '</div>';
-
-                        // Set the content and open the info window
-                        infoWindow.setContent(contentString);
-                        infoWindow.open(map, busesvar[i]);
-                    };
-                })(i, busesvar[i].id));
-            } */
+            
         }
 
         function addBusMarkers(i,bus) {
@@ -426,15 +386,13 @@
                 console.log("busesvar.length",busvarcount);
             }
 
-            len =("urn:ngsild:Vehicle:Bus:").length;
-            n = (id).slice(len, id.length);
-            console.log("hhhhhhh ",n);
+            console.log("hhhhhhh ", busesIndex);
 
             loc = payload.location.value;
             const lat = parseFloat((loc.coordinates).split(',')[0]);
             const lng = parseFloat((loc.coordinates).split(',')[1]);
             console.log(lat, lng, typeof(lat), loc, typeof(loc));
-            (busesvar[Number(n-1)]).setPosition(new google.maps.LatLng(lat, lng)); 
+            (busesvar[busesIndex]).setPosition(new google.maps.LatLng(lat, lng)); 
             //console.log(busesvar[Number(n-1)].position.lat, busesvar[Number(n-1)].position.lng);
             //map.setCenter(new google.maps.LatLng(lat, lng));
         }
