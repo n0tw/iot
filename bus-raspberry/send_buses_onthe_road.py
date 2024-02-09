@@ -15,11 +15,11 @@ busai_script = "C:/Users/pangl/Desktop/GitRepo/bus-raspberry/busai.py"
 ids = []
 i=1
 
-while i <6:
+while i <4:
     ids.append(['urn:ngsild:CrowdFlowObserved:Bus:'+str(i), 'urn:ngsild:Vehicle:Bus:'+str(i)])
     run_busai(busai_script, ids[-1])
     i+=1
-    time.sleep(240)
+    time.sleep(1000)
 
 
 

@@ -55,6 +55,7 @@ async def handle_request(data, endpoint):
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
+
 @app.route('/receive_bus_data', methods=['POST'])
 async def receive_bus_data():
     global client
@@ -65,7 +66,7 @@ async def receive_bus_data():
     vcords = data['locations']
     vplate = "LICENCE PLATE"
     vdatetimeObs = datetime.datetime.now().isoformat()
-    vcFOid = data['crowdflowid']
+    vcFOid = data.get('crowdflowid') 
 
     vehicleData = {
         "id": vid,
@@ -94,10 +95,6 @@ async def receive_bus_data():
                 "@value": vdatetimeObs
             }
         },
-        "crowdFlowObserved": {
-            "type": "CrowdFlowObserved",
-            "value": vcFOid
-        },
         "vehicleTrackerDevice": {
             "type": "Property",
             "value": "Installed"
@@ -107,6 +104,11 @@ async def receive_bus_data():
             "value": "bus"
         }
     }
+    if vcFOid is not None:
+        vehicleData["crowdFlowObserved"] = {
+            "type": "CrowdFlowObserved",
+            "value": vcFOid
+        }
 
     extData = await get_from_endpoint("http://localhost:5003/entities"+'/'+str(vid))
     maxVersion = 0
