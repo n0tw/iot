@@ -1,4 +1,5 @@
 from datetime import timedelta, timezone
+import os
 from flask import Flask,jsonify
 import datetime as dt
 from pymongo import MongoClient
@@ -8,10 +9,12 @@ from flask_restful import Api, Resource, reqparse
 import requests
 
 app = Flask(__name__)
+
 api=Api(app)
 
 # MongoDB configuration
-client = MongoClient("mongodb://localhost:27017/") 
+mongo_uri = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/')
+client = MongoClient(mongo_uri)
 
 # Select the database
 db = client["externalDB"]
@@ -295,6 +298,6 @@ api.add_resource(EntitiesByTimeResource, '/entities_by_time/<string:entityId>/<i
 api.add_resource(EntityResourceMultipleInstances, '/entities/<string:entity_id>')
     
 if __name__ == '__main__':
-    app.run(debug=True, port=5003)
+    app.run(host='0.0.0.0', debug=True, port=5003)
 
     
