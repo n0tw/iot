@@ -86,7 +86,39 @@ class EntityResource(Resource):
         json_doc = json.loads(json_util.dumps(existing_entity))
         return jsonify({'message': f'Entity with ID {entity_id} and version {version} deleted', 'data': json_doc})
 
+# Class for returning average people count per station for specific bus
+class PeopleAvgPerStationByTimeResource(Resource):
+    def get(self, entityId, initYear, initMonth, initDay, initHour, initMinute, initSecond,
+            endYear, endMonth, endDay, endHour, endMinute, endSecond, tz_offset):
+        tz = timezone(timedelta(minutes=tz_offset))
+        # Similar to your existing logic for retrieving data by time
+        # ...
+        # Get the MongoDB collection
+        data={}
+        try:
+            # Bulk request for entity CrowdFlowObserved
+            for existing_entity in collection.find({
+                                                "dateObserved.value.@value": {
+                                                    "$gte": dt.datetime(initYear, initMonth, initDay, 
+                                                                        initHour, initMinute, initSecond,0,tzinfo=tz).isoformat(),
+                                                    "$lt": dt.datetime(endYear, endMonth, endDay, 
+                                                                        endHour, endMinute, endSecond,0,tzinfo=tz).isoformat()
+                                                },
+                                                "id": entityId
+                                                }):
+                if existing_entity["name.value"] in data:
+                    data[existing_entity["name.value"]].append(existing_entity)
+                else: data[existing_entity["name.value"]] = [existing_entity]
 
+            if len(data) == 0:
+                return jsonify({'message': f'Entity with ID {entityId} or specific DateTime values not found'}), 404
+            
+            return jsonify({'message': f'Entity with ID {entityId} received', 'data': json.loads(json_util.dumps(data))})
+        
+        except Exception as e:
+            print(f"Error: {str(e)}")
+            return jsonify({'message': 'Error occurred during get'}), 500
+        
 # Method only for CrowdFlowObserved
 class EntitiesByTimeResource(Resource):
     def get(self, entityId, initYear, initMonth, initDay, initHour, initMinute, initSecond,
