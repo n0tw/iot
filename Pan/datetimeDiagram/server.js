@@ -35,12 +35,11 @@ const readDataByTime = async(req, res, entityId, initYear, initMonth, initDay, i
     console.log('Type of data:', typeof data);
     console.log('Content of data:', data);
 
-    // Flatten the array of data to get individual entries
-    const allEntries = data.flatMap(data => data);
+    const allEntries = Object.entries(data)
 
     // Extract datetime and peopleCount values
-    const xValues = allEntries.map(entry => entry.dateObserved.value['@value']);
-    const yValues = allEntries.map(entry => entry.peopleCount.value);
+    const xValues = allEntries.map(([label, value]) => label);
+    const yValues = allEntries.map(([label, value]) => value);
 
     // Send the data as JSON
     res.json({ xValues, yValues });

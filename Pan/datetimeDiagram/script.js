@@ -31,7 +31,7 @@ async function createCharts() {
       data: {
         labels: xValues,
         datasets: [{
-          label: 'Data Values',
+          label: 'Average people in station per hour',
           data: data.yValues,
           borderColor: 'rgb(75, 192, 192, 0.2)',
           borderWidth: 2,
@@ -63,7 +63,7 @@ async function createCharts() {
       data: {
         labels: xValues2,
         datasets: [{
-          label: 'Data Values 2',
+          label: 'Average people collected per station',
           data: data2.yValues2,
           borderColor: 'rgb(192, 75, 192, 0.2)',
           borderWidth: 2,

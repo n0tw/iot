@@ -6,6 +6,7 @@ from pymongo import MongoClient
 import json
 from bson import json_util
 from flask_restful import Api, Resource, reqparse
+from collections import defaultdict
 import requests
 
 app = Flask(__name__)
@@ -154,12 +155,27 @@ class EntitiesByTimeResource(Resource):
                                                 },
                                                 "id": entityId
                                                 }):
-                data.append(existing_entity)
+                data.append([int(existing_entity["peopleCount"]["value"]), existing_entity["dateObserved"]["value"]["@value"]])
 
+            hourly_data = defaultdict(list)
+
+            # Parse datetime strings, group by hour, and accumulate values
+            for value, iso_datetime in data:
+                dat = dt.datetime.fromisoformat(iso_datetime)
+                hour_key = dat.replace(minute=0, second=0, microsecond=0)
+                hourly_data[hour_key].append(value)
+
+            # Calculate the average for each hour
+            average_data = {hour: sum(values) / len(values) for hour, values in hourly_data.items()}
+            
+            data_to_send = {}
+            for hour, average_value in average_data.items():
+                data_to_send[hour.isoformat()] = average_value
+        
             if len(data) == 0:
                 return jsonify({'message': f'Entity with ID {entityId} or specific DateTime values not found'}), 404
             
-            return jsonify({'message': f'Entity with ID {entityId} received', 'data': json.loads(json_util.dumps(data))})
+            return jsonify({'message': f'Entity with ID {entityId} received', 'data': json.loads(json_util.dumps(data_to_send))})
         
         except Exception as e:
             print(f"Error: {str(e)}")
