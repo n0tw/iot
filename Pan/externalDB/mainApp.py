@@ -118,13 +118,16 @@ class PeopleAvgPerStationByTimeResource(Resource):
 
             dataAvg = {}
 
+            c = 1
             for station in data:
-                dataAvg[station] = 0
+                dataAvg[f"{c}.{station}"] = 0
 
                 for entity in data[station]:
-                    dataAvg[station] = dataAvg[station] + entity["peopleCount"]["value"]
+                    dataAvg[f"{c}.{station}"] = dataAvg[f"{c}.{station}"] + entity["peopleCount"]["value"]
 
-                dataAvg[station] = dataAvg[station] / float(len(data[station]))
+                dataAvg[f"{c}.{station}"] = dataAvg[f"{c}.{station}"] / float(len(data[station]))
+                
+                c = c + 1
                 
             if len(dataAvg) == 0:
                 return jsonify({'message': f'Entity with ID {entityId} or specific DateTime values not found'}), 404
