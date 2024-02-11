@@ -23,7 +23,6 @@ const readDataByTime = async(req, res, entityId, initYear, initMonth, initDay, i
   try {
     // Make an HTTP request to your Flask API endpoint
     const response = await axios.get(`http://localhost:5003/entities_by_time/${entityId}/${initYear}/${initMonth}/${initDay}/${initHour}/${initMinute}/${initSecond}/${endYear}/${endMonth}/${endDay}/${endHour}/${endMinute}/${endSecond}/${tz_offset}`);
-
     // Retrieve data from the Flask API response
     const responseData = response.data;
 
@@ -44,7 +43,39 @@ const readDataByTime = async(req, res, entityId, initYear, initMonth, initDay, i
     const yValues = allEntries.map(entry => entry.peopleCount.value);
 
     // Send the data as JSON
-    res.json({xValues, yValues});
+    res.json({ xValues, yValues });
+  } catch (error) {
+    console.error('Error fetching data from MongoDB:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Define a route to get data from MongoDB
+const readDataAvgPeopleByTime = async(req, res, entityId, initYear, initMonth, initDay, initHour, initMinute, initSecond,
+  endYear, endMonth, endDay, endHour, endMinute, endSecond, tz_offset) => {
+  try {
+    // Make an HTTP request to your Flask API endpoint
+    const response2 = await axios.get(`http://localhost:5003/avg_people_by_time/${entityId}/${initYear}/${initMonth}/${initDay}/${initHour}/${initMinute}/${initSecond}/${endYear}/${endMonth}/${endDay}/${endHour}/${endMinute}/${endSecond}/${tz_offset}`);
+    // Retrieve data from the Flask API response
+    const responseData2 = response2.data;
+
+    // Extract the 'data' array from responseData
+    const data2 = responseData2.data;
+
+    console.log('Type of data2:', typeof data2);
+    console.log('Content of data2:', data2);
+
+    const entries2 = Object.entries(data2);
+    const xValues2 = entries2.map(([label, value]) => label);
+    const yValues2 = entries2.map(([label, value]) => value);
+
+    console.log('Type of xValues2:', typeof xValues2);
+    console.log('Content of xValues2:', xValues2);
+    console.log('Type of yValues2:', typeof yValues2);
+    console.log('Content of yValues2:', yValues2);
+
+    // Send the data as JSON
+    res.json({ xValues2, yValues2 });
   } catch (error) {
     console.error('Error fetching data from MongoDB:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -67,7 +98,23 @@ const readDataByTime = async(req, res, entityId, initYear, initMonth, initDay, i
       const data = await readDataByTime(
         req,
         res,
-        "urn:ngsild:CrowdFlowObserved:Station:5",
+        "urn:ngsild:CrowdFlowObserved:Station:2",
+        2018,3,11,15,31,2,2024,4,5,1,5,2,0
+        );
+    } catch (error) {
+      console.error('Error fetching data from MongoDB:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.get('/getDataAvgPeopleByTime', async (req, res) => {
+    try {
+      // Add code to choose CrowdFlowObserved ID based on bus station
+
+      const data = await readDataAvgPeopleByTime(
+        req,
+        res,
+        "urn:ngsild:CrowdFlowObserved:Bus:1",
         2018,3,11,15,31,2,2024,4,5,1,5,2,0
         );
     } catch (error) {

@@ -97,7 +97,8 @@ class PeopleAvgPerStationByTimeResource(Resource):
         # Similar to your existing logic for retrieving data by time
         # ...
         # Get the MongoDB collection
-        data={}
+        data = {}
+        data2 = []
         try:
             # Bulk request for entity CrowdFlowObserved
             for existing_entity in collection.find({
@@ -109,14 +110,25 @@ class PeopleAvgPerStationByTimeResource(Resource):
                                                 },
                                                 "id": entityId
                                                 }):
-                if existing_entity["name.value"] in data:
-                    data[existing_entity["name.value"]].append(existing_entity)
-                else: data[existing_entity["name.value"]] = [existing_entity]
+                if existing_entity["name"]["value"] in data:
+                    data[existing_entity["name"]["value"]].append(existing_entity)
+                else: data[existing_entity["name"]["value"]] = [existing_entity]
+                data2.append(existing_entity)
 
-            if len(data) == 0:
+            dataAvg = {}
+
+            for station in data:
+                dataAvg[station] = 0
+
+                for entity in data[station]:
+                    dataAvg[station] = dataAvg[station] + entity["peopleCount"]["value"]
+
+                dataAvg[station] = dataAvg[station] / float(len(data[station]))
+                
+            if len(dataAvg) == 0:
                 return jsonify({'message': f'Entity with ID {entityId} or specific DateTime values not found'}), 404
             
-            return jsonify({'message': f'Entity with ID {entityId} received', 'data': json.loads(json_util.dumps(data))})
+            return jsonify({'message': f'Entity with ID {entityId} received', 'data': json.loads(json_util.dumps(dataAvg))})
         
         except Exception as e:
             print(f"Error: {str(e)}")
@@ -294,6 +306,7 @@ class EntitiesByTimeResource(Resource):
 
 
 api.add_resource(EntityResource, '/entity/<string:entity_id>/<string:version>')
+api.add_resource(PeopleAvgPerStationByTimeResource, '/avg_people_by_time/<string:entityId>/<int:initYear>/<int:initMonth>/<int:initDay>/<int:initHour>/<int:initMinute>/<int:initSecond>/<int:endYear>/<int:endMonth>/<int:endDay>/<int:endHour>/<int:endMinute>/<int:endSecond>/<int:tz_offset>')
 api.add_resource(EntitiesByTimeResource, '/entities_by_time/<string:entityId>/<int:initYear>/<int:initMonth>/<int:initDay>/<int:initHour>/<int:initMinute>/<int:initSecond>/<int:endYear>/<int:endMonth>/<int:endDay>/<int:endHour>/<int:endMinute>/<int:endSecond>/<int:tz_offset>')
 api.add_resource(EntityResourceMultipleInstances, '/entities/<string:entity_id>')
     
