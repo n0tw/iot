@@ -261,9 +261,10 @@ const updateBusData = async () => {
             if (!locationData) {
                 return;
             }
-            
+            const number = await readEntityAttribute(bus, 'description');
             return {
                 id: bus,
+                description: number.value,
                 location: locationData,
                 crowdflowid: congestedid,
                 license_plate: await readEntityAttribute(bus, 'license_plate')
@@ -330,53 +331,110 @@ server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
 
-async function fetchData() {
+
+   
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                                            /*Historical Data*/
+
+
+
+      
+const readDataByTime = async(req, res, entityId, initYear, initMonth, initDay, initHour, initMinute, initSecond,
+    endYear, endMonth, endDay, endHour, endMinute, endSecond, tz_offset) => {
+    console.log(`http://localhost:5003/entities_by_time/${entityId}/${Number(initYear)}/${Number(initMonth)}/${Number(initDay)}/${Number(initHour)}/${initMinute}/${initSecond}/${Number(endYear)}/${Number(endMonth)}/${Number(endDay)}/${Number(endHour)}/${endMinute}/${endSecond}/${tz_offset}`, typeof(entityId), typeof(endYear), typeof(initMinute));
     try {
-        const response = await fetch('http://localhost:8000/getDataByTime', {
-            mode: 'cors',
-        });
-        const data = await response.json();
-
-        // Log the fetched data
-        console.log('Fetched Data:', data);
-
-        return data;
+        // Make an HTTP request to your Flask API endpoint
+        const response = await axios.get(`http://localhost:5003/entities_by_time/${entityId}/${initYear}/${initMonth}/${initDay}/${initHour}/${initMinute}/${initSecond}/${endYear}/${endMonth}/${endDay}/${endHour}/${endMinute}/${endSecond}/${tz_offset}`);
+        // Retrieve data from the Flask API response
+        const responseData = response.data;
+    
+        console.log('Type of responseData:', typeof responseData);
+        console.log('Content of responseData:', responseData);
+    
+        // Extract the 'data' array from responseData
+        const data = responseData.data;
+    
+        console.log('Type of data:', typeof data);
+        console.log('Content of data:', data);
+    
+        const allEntries = Object.entries(data)
+    
+        // Extract datetime and peopleCount values
+        const xValues = allEntries.map(([label, value]) => label);
+        const yValues = allEntries.map(([label, value]) => value);
+    
+        // Send the data as JSON
+        res.json({ xValues, yValues });
     } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching data from MongoDB:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
-}
+};
 
-// Function to create and render the chart
-async function createChart() {
-    const data = await fetchData();
+const readDataAvgPeopleByTime = async(req, res, entityId, initYear, initMonth, initDay, initHour, initMinute, initSecond,
+    endYear, endMonth, endDay, endHour, endMinute, endSecond, tz_offset) => {
+    try {
+      // Make an HTTP request to your Flask API endpoint
+      const response2 = await axios.get(`http://localhost:5003/avg_people_by_time/${entityId}/${initYear}/${initMonth}/${initDay}/${initHour}/${initMinute}/${initSecond}/${endYear}/${endMonth}/${endDay}/${endHour}/${endMinute}/${endSecond}/${tz_offset}`);
+      // Retrieve data from the Flask API response
+      const responseData2 = response2.data;
+  
+      // Extract the 'data' array from responseData
+      const data2 = responseData2.data;
+  
+      console.log('Type of data2:', typeof data2);
+      console.log('Content of data2:', data2);
+  
+      const entries2 = Object.entries(data2);
+      const xValues2 = entries2.map(([label, value]) => label);
+      const yValues2 = entries2.map(([label, value]) => value);
+  
+      console.log('Type of xValues2:', typeof xValues2);
+      console.log('Content of xValues2:', xValues2);
+      console.log('Type of yValues2:', typeof yValues2);
+      console.log('Content of yValues2:', yValues2);
+  
+      // Send the data as JSON
+      res.json({ xValues2, yValues2 });
+    } catch (error) {
+      console.error('Error fetching data from MongoDB:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+};
+      
+  
+// Read entity attribute
+app.get('/getDataByTime', async (req, res) => {
+    try {
+        const reqData = req.query;
 
-    // Convert xValues to Moment.js objects
-    const xValues = data.xValues.map(dateString => moment(dateString));
+        const data = await readDataByTime(
+            req,
+            res,
+            reqData.id,
+            Number(reqData.initYear),Number(reqData.initMonth),Number(reqData.initDay),Number(reqData.initHour),1,1,Number(reqData.endYear),Number(reqData.endMonth),Number(reqData.endDay),Number(reqData.endHour),2,2,0
+            );
+    } catch (error) {
+    console.error('Error fetching data from MongoDB:', error);
+    res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
-    const ctx = document.getElementById('myChart').getContext('2d');
-    const myChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: xValues,
-            datasets: [{
-                label: 'Data Values',
-                data: data.yValues,
-                borderColor: 'rgb(75, 192, 192, 0.2)',
-                borderWidth: 2,
-                fill: false,
-            }],
-        },
-        options: {
-            responsive: false,
-            scales: {
-                x: {
-                    type: 'time', // Specify that X-axis values are of type 'time'
-                    position: 'bottom',
-                },
-                y: {
-                    beginAtZero: true,
-                }
-            },
-        }
-    });
-}
+app.get('/getDataAvgPeopleByTime', async (req, res) => {
+    try {
+        const reqData = req.query;
+
+        const data = await readDataAvgPeopleByTime(
+            req,
+            res,
+            reqData.id,
+            Number(reqData.initYear),Number(reqData.initMonth),Number(reqData.initDay),Number(reqData.initHour),1,1,Number(reqData.endYear),Number(reqData.endMonth),Number(reqData.endDay),Number(reqData.endHour),2,2,0
+            );
+    } catch (error) {
+        console.error('Error fetching data from MongoDB:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
+   
