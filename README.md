@@ -1,14 +1,14 @@
-Required apps:
+#Required apps:
 
 + Download and install Nodejs from the official Node.js website: https://nodejs.org/
 + Download docker desktop from https://docs.docker.com/desktop/install/windows-install/ 
 
-Required packages:
+#Required packages:
 
-Python packages:
+##Python packages:
 + For python packages needed run: pip install Flask pymongo Flask-RESTful requests aiohttp flask schedule opencv-python torch ultralytics supervisely paho-mqtt numpy pandas torchvision detectron2
 
-Node.js packages:
+##Node.js packages:
 + For Express run: npm install express
 + For Cors run: npm install cors
 + For For Axios run: npm install axios
@@ -18,7 +18,7 @@ Node.js packages:
 + For XLSX run: npm install xlsx
 + For socket.io run: npm install socket.io
 
-Hot to run:
+#How to run:
 
 1. Download all files and put them in a folder
    + Download GitRepo_LargeFiles from dropbox link and add it in the same folder as the rest of the files
