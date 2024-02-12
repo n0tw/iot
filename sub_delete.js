@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 
-const subscriptionIdToDelete = '658d9a7ec7608592129ea077';
+const subscriptionIdToDelete = '6599daaac7608592129ea08e';
 const contextBrokerUrl = `http://150.140.186.118:1026/v2/subscriptions/${subscriptionIdToDelete}`;
 
 fetch(contextBrokerUrl, {

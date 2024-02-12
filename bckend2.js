@@ -17,7 +17,8 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-app.post('/subscribe', async (req, res) => {
+app.post('/notification-endpoint', async (req, res) => {
+    console.log('Received notification:', req.body);
     const subscriptionData = req.body; // Data for context broker subscription
     const contextBrokerUrl = 'http://150.140.186.118:1026/v2/subscriptions';
 
@@ -81,12 +82,12 @@ const buses = [
 io.on('connection', (socket) => {
     console.log('Client connected');
 
-    // Simulate updates with station names
-    setInterval(() => {
+    
+    /* setInterval(() => {
         const randomStationIndex = Math.floor(Math.random() * stations.length);
         const station = stations[randomStationIndex];
 
-        // Simulate data received from the context broker
+        
         const data = {
             stationName: station.name,
             attributeValue: Math.floor(Math.random() * 100), // Example random attribute value
@@ -96,10 +97,16 @@ io.on('connection', (socket) => {
 
         // Emit the 'update' event with station name
         socket.emit('update', data);
-    }, 5000); // Simulate updates every 5 seconds
+    }, 5000); // Simulate updates every 5 seconds */
+    socket.on('update', (data) => {
+        console.log('Received update:', data);
+
+        // Add your logic to process the received update data and emit it to the client if needed
+        socket.emit('update', data);
+    });
 
     setInterval(() => {
-        const randomStationIndex = Math.floor(Math.random() * stations.length);
+        const randomStationIndex = Math.floor(Math.random() * buses.length);
         const bus = buses[randomStationIndex];
 
         // Simulate data received from the context broker
@@ -117,8 +124,7 @@ io.on('connection', (socket) => {
     });
 });
 
-// Your existing subscriptionData
-const subscriptionData = {
+/* const subscriptionData = {
     "subject": {
         "entities": [
             {
@@ -126,7 +132,7 @@ const subscriptionData = {
                 "type": "TransportStation",
                 "condition": {
                     "attrs": [
-                        "location"
+                        "crowdFlowObserved.peopleCount"
                     ]
                 }
             }
@@ -138,22 +144,27 @@ const subscriptionData = {
         }
     }
 };
-
-
-// Fetch subscription
-fetch('http://150.140.186.118:1026/v2/subscriptions', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(subscriptionData),
-})
-    .then(response => response.json())
-    .then(data => console.log(data))
-    .catch(error => console.error('Error:', error));
-
-// Start the server
+ */
 const PORT = 8000;
+app.use(bodyParser.json());
+app.post('/notification-endpoint', (req, res) => {
+    console.log('Received notification:', req.body);
+    res.sendStatus(200); // Send a 200 OK response to confirm receipt
+});
+
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
+
+fetch('http://150.140.186.118:1026/v2/subscriptions/6599daaac7608592129ea08e', {
+    method: 'GET',
+})
+.then(response => response.json())
+.then(data => console.log(data))
+.catch(error => console.error('Error:', error));
+
+
+
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

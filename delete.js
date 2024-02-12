@@ -9,6 +9,7 @@ const deleteEntity = async (entityId) => {
   }
 };
 
-// Usage
-deleteEntity('bus123');
-deleteEntity('station123');
+
+for (let i = 1; i < 33; i++) {
+  deleteEntity("urn:ngsild:CrowdFlowObserved:Station:" + String(i));
+}
