@@ -62,4 +62,7 @@ docker compose -up --build
 python run_scripts.py
 ```
 
-6. In frontEnd-backEnd folder open cmd and tpye ~node start-scripts.js
+5. In frontEnd-backEnd folder open cmd and tpye ~
+```bash
+node start-scripts.js
+```
