@@ -9,6 +9,7 @@
 + For python packages needed run:
 ```cmd
 pip install Flask pymongo Flask-RESTful requests aiohttp flask schedule opencv-python torch ultralytics supervisely paho-mqtt numpy pandas torchvision detectron2
+```
 
 ## Node.js packages:
 + For Express run: npm install express
