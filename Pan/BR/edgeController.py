@@ -62,11 +62,12 @@ async def receive_bus_data():
 
     data = request.get_json()
 
+    vBusNumber = data.get('busnumber')
     vid = data['vehicleid']
     vcords = data['locations']
     vplate = "LICENCE PLATE"
     vdatetimeObs = datetime.datetime.now().isoformat()
-    vcFOid = data.get('crowdflowid') 
+    vcFOid = data['crowdflowid']
 
     vehicleData = {
         "id": vid,
@@ -102,13 +103,16 @@ async def receive_bus_data():
         "vehicleType": {
             "type": "Property",
             "value": "bus"
-        }
-    }
-    if vcFOid is not None:
-        vehicleData["crowdFlowObserved"] = {
+        },
+        "description": {
+            "type": "Property",
+            "value": vBusNumber
+        },
+        "crowdFlowObserved": {
             "type": "CrowdFlowObserved",
             "value": vcFOid
         }
+    }
 
     extData = await get_from_endpoint("http://localhost:5003/entities"+'/'+str(vid))
     maxVersion = 0
