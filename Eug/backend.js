@@ -21,14 +21,9 @@ const worksheet = workbook.Sheets[sheetName];
 app.use(bodyParser.json());
 
 app.use(cors({
-    origin: 'http://127.0.0.1:3000',
-    credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization'],
-}));
-app.use(cors({
-    origin: 'http://127.0.0.1:3030',
-    credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: '*',
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 async function readexcel(){
