@@ -21,7 +21,7 @@
 # How to run:
 
 1. Download all files and put them in a folder
-   + Download GitRepo_LargeFiles from dropbox link and add it in the same folder as the rest of the files
+   + Download GitRepo_LargeFiles from [here](https://www.dropbox.com/scl/fo/xkffl87ia2yy5pp4ahwvg/h?rlkey=nb8zr8kwkz41wdny6tdgwtgec&dl=0) and add it in the same folder as the rest of the files
         
 2. In the cmd, type ~pip show numpy. Open the package location and go to supervision>detection>core.py and change np.bool to bool in line 175. Then save.
    
