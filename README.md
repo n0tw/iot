@@ -7,7 +7,7 @@
 
 ## Python packages:
 + For python packages needed run:
-```bash
+```cmd
 pip install Flask pymongo Flask-RESTful requests aiohttp flask schedule opencv-python torch ultralytics supervisely paho-mqtt numpy pandas torchvision detectron2
 
 ## Node.js packages:
