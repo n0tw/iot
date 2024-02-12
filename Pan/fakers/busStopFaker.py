@@ -129,6 +129,22 @@ async def receive_data():
         else:
             pause_flag_5 = False
 
+        if(data['station_name'] == transportStationNames[12]):
+            await post_to_edge_controller({'tvid': "urn:ngsild:TrafficViolation:IllegalParking:1",
+                                            'datetime': datetime.datetime.now().isoformat(),
+                                            'plate': "_",
+                                            'stationName': "Intracom",
+                                            'location': tSlocations[14]},
+                                            "http://localhost:5002/receive_violation_data")
+            await post_to_edge_controller({'id': transportStationIDs[14],
+                                            'vID': None,
+                                            "dtLastReported": None,
+                                            'cFOID': crowdFlowObservedIDs[14],
+                                            "dtLastObserved": datetime.datetime.now().isoformat(),
+                                            'location': tSlocations[14],
+                                            'name': transportStationNames[14],
+                                            'tVid': "_"},"http://localhost:5002/receive_station_data")
+            
         index = transportStationNames.index(data['station_name'])
         # Set the shared dynamic data based on received data
         set_shared_dynamic_data(data)
@@ -146,7 +162,7 @@ async def receive_data():
                       'name': data['station_name'],
                       'tVid': tVid}
         # Post the received data to the edge controller
-        await post_to_edge_controller(dataToPost)
+        await post_to_edge_controller(dataToPost, 'http://localhost:5002/receive_station_data')
 
         print(dataToPost)
         # Respond to the original request
@@ -162,8 +178,8 @@ def set_shared_dynamic_data(data):
     shared_dynamic_data = {'name': data['station_name']}
 
 # Function to post data to the edge controller
-async def post_to_edge_controller(data):
-    edge_controller_url = 'http://localhost:5002/receive_station_data'  # Adjust the URL as needed
+async def post_to_edge_controller(data, url):
+    edge_controller_url = url  # Adjust the URL as needed
     async with aiohttp.ClientSession() as session:
         async with session.post(edge_controller_url, json=data) as response:
             response.raise_for_status()
@@ -171,7 +187,6 @@ async def post_to_edge_controller(data):
 # Function to post data to a different endpoint every 5 seconds
 async def post_periodically_async():
     # Use the shared dynamic data
-    global values_iterator
     global random_values
     global crowdFlowObservedIDs
     global transportStationIDs
@@ -240,16 +255,16 @@ async def run_when_paused(session):
 
     if(stationName == transportStationNames[0]):
         await post_async(session, edge_controller_url, {'id': crowdFlowObservedIDs[0], 'value': 10,
-                                                  'dateObserved': datetime.datetime.now().isoformat(), 'station': None,
-                                                  'entityName': transportStationNames[0]})
+                                                'dateObserved': datetime.datetime.now().isoformat(), 'station': None,
+                                                'entityName': transportStationNames[0]})
         await post_async(session, second_endpoint_url, {'id': transportStationIDs[0],
-                                                                   'vID': None,
-                                                                   "dtLastReported": None,
-                                                                   'cFOID': crowdFlowObservedIDs[0],
-                                                                   "dtLastObserved": datetime.datetime.now().isoformat(),
-                                                                   'location': tSlocations[0],
-                                                                   'name': transportStationNames[0],
-                                                                   'tVid': "_"})
+                                                                'vID': None,
+                                                                "dtLastReported": None,
+                                                                'cFOID': crowdFlowObservedIDs[0],
+                                                                "dtLastObserved": datetime.datetime.now().isoformat(),
+                                                                'location': tSlocations[0],
+                                                                'name': transportStationNames[0],
+                                                                'tVid': "_"})
         
     if(stationName == transportStationNames[5]):
         frame_width = 852
@@ -263,7 +278,7 @@ async def run_when_paused(session):
         if not cap.isOpened():
             print("Error: Could not open video.")
 
-        model1 = YOLO("yolov8l.pt")
+        #model1 = YOLO("yolov8l.pt")
         model = torch.hub.load('ultralytics/yolov5', 'custom', path='C:/Users/pangl/Desktop/GitRepo_LargeFiles/Pan/Fakers/crowdhuman_yolov5m.pt')
 
         box_annotator = sv.BoxAnnotator(
@@ -294,7 +309,6 @@ async def run_when_paused(session):
                 break
 
             if(frame_counter % 300 == 0):  # Process every 300 frames
-                # People counter
                 result = model(frame)
                 detections = sv.Detections.from_yolov5(result)
                 labels = [
@@ -304,10 +318,24 @@ async def run_when_paused(session):
                 ]
                 detections_0 = detections[detections.class_id == 0]
                 frame = box_annotator.annotate(
-                    scene=frame, 
+                    scene=frame,
                     detections=detections_0,
                     labels=labels
                 )
+
+                # # Yolo 8
+                # result1 = model1(frame, agnostic_nms = True, classes=[0])[0]
+                # detections1 = sv.Detections.from_yolov8(result1)    
+                # labels1 = [
+                #     f"{model1.model.names[class_id1]} {confidence1:0.2f}"
+                #     for _, confidence1, class_id1, _
+                #     in detections1
+                # ]
+                # frame = box_annotator.annotate(
+                #     scene=frame, 
+                #     detections=detections1,
+                #     labels=labels1
+                # )
 
                 # # Bus detection
                 # result1 = model1(frame, agnostic_nms = True, classes=[5])[0]
@@ -324,22 +352,21 @@ async def run_when_paused(session):
                 # )
                 # if(len(detections1)!=0): bus_detection = True
                 # else: bus_detection = False
-
+                
                 await post_async(session, edge_controller_url, {'id': crowdFlowObservedIDs[5], 'value': len(detections_0),
-                                                        'dateObserved': datetime.datetime.now().isoformat(), 'station': None,
-                                                        'entityName': transportStationNames[5]})
+                                                                'dateObserved': datetime.datetime.now().isoformat(),
+                                                                'station': None,
+                                                                'entityName': transportStationNames[5]})
+                zone.trigger(detections=detections_0)
+                frame = zone_annotator.annotate(scene=frame)
                 await post_async(session, second_endpoint_url, {'id': transportStationIDs[5],
-                                                                        'vID': None,
-                                                                        "dtLastReported": None,
-                                                                        'cFOID': crowdFlowObservedIDs[5],
-                                                                        "dtLastObserved": datetime.datetime.now().isoformat(),
-                                                                        'location': tSlocations[5],
-                                                                        'name': transportStationNames[5],
-                                                                        'tVid': "_"})
-                
-                
-                zone.trigger(detections = detections_0)
-                frame = zone_annotator.annotate(scene=frame)      
+                                                                'vID': None,
+                                                                "dtLastReported": None,
+                                                                'cFOID': crowdFlowObservedIDs[5],
+                                                                "dtLastObserved": datetime.datetime.now().isoformat(),
+                                                                'location': tSlocations[5],
+                                                                'name': transportStationNames[5],
+                                                                'tVid': "_"})
             
             cv2.imshow("yolov5", frame)
 
@@ -347,7 +374,7 @@ async def run_when_paused(session):
                 break
 
             frame_counter += 1
-
+        
         pause_flag_5 = False
         await post_async(session, "http://localhost:5000/video_ended", {'favierou_vid': 1})
         await post_async(session, "http://localhost:5002/receive_violation_data", {
@@ -368,7 +395,6 @@ async def run_when_paused(session):
         
         cap.release()
         cv2.destroyAllWindows()
-
 
 # Schedule the periodic job
 schedule.every(5).seconds.do(lambda: asyncio.run(post_periodically_async()))

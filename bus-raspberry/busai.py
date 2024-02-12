@@ -270,6 +270,7 @@ async def update_locations_async():
 
         if result is not None:
             locations, station = result
+            await send_data_async(locations)
             print(locations)
             t = 3
             if station:
