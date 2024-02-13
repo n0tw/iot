@@ -54,7 +54,7 @@ npm install socket.io
    
 3. In externalDB folder open cmd and type
 ```bash
-docker compose -up --build
+docker compose up --build
 ```
     
 4. In edgeController folder open cmd and type
