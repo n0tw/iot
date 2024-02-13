@@ -58,11 +58,18 @@ header {
 }
 
 #chart-container {
+    position: relative;
     display: flex;
     width: 70%;
-    justify-content: space-between;
+    margin: 0 auto; /* Center the chart */
+    height: 400px; /* Adjust height as needed */
+    /* justify-content: space-between; */
     margin-bottom: 70px;
     align-items: flex-start;
+}
+#mychart {
+    width: 100%;
+    height: 100%;
 }
 
 #data-table {
@@ -123,7 +130,7 @@ header {
     position: fixed;
     top: 0;
     left: 0;
-    width: 80%;
+    width: 50%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 9999;
@@ -141,8 +148,8 @@ header {
 #historicalStationschart-container, #historicalStationschart-container1{
     top: 20%;
     position: absolute;
-    left: 60%; /* Position 60% from the left edge */
-    width: 50%; /* Adjust width to be 40% of the front layer */
+    left: 42%; /* Position 60% from the left edge */
+    width: 80%; /* Adjust width to be 40% of the front layer */
     height: 60%; /* Adjust height to be 100% of the front layer */
     /*background-color: rgba(255, 255, 255, 1);  Example background color */
     transform: translateX(-40%); /* Adjust to center horizontally */
@@ -152,7 +159,7 @@ header {
 }
 
 #historicalStationschart-container1{
-    top: 70%;
+    top: 80%;
 }
 #menu, #menu1 {
     position: absolute;
@@ -161,6 +168,10 @@ header {
 }
 #dropdown, #menu input{
     background-color: #6b7266;
+}
+
+#dropdown1, #menu1 input{
+    background-color: #666a72;
 }
 
 #chart-background {
@@ -176,7 +187,7 @@ header {
 }
 
 #chart-background1 {
-    background-color: rgb(0, 98, 255);
+    background-color: rgb(0, 149, 255);
     position: relative;
     margin: auto;
     height: 40vh;
@@ -280,7 +291,7 @@ header {
                 console.log("i", i);
                 const option = document.createElement('option');
                 option.value = `urn:ngsild:CrowdFlowObserved:Bus:${i+1}`;
-                option.textContent = buses[i].description;
+                option.textContent = busesvar[i].title;
                 dropdown1.appendChild(option);
             }
         }
@@ -455,20 +466,22 @@ header {
                     borderColor: 'rgba(75, 192, 192, 1)', // Border color
                     borderWidth: 1, // Border width
                 }]
-            },/* 
+            },
             options: {
+                responsive: true,
+                maintainAspectRatio: false,
                 scales: {
-                    x: {
-                        type: 'linear',
-                        position: 'bottom'
+                        x: {
+                            type:'category', 
+                            position: 'bottom',
+                        },
+                        y: {
+                            beginAtZero: true,
+                        }
                     },
-                    y: {
-                        beginAtZero: true,
-                        max: 100
-                    }
                 }
-            } */
         });
+        
 
         
         const stationDataMap = [];
@@ -684,7 +697,7 @@ header {
                 let layerTransform;
                 let layerTransform1;
                 if (distanceToLeft < threshold) {
-                    layerTransform = "translateX(-25%)";
+                    layerTransform = "translateX(+30%)";
                 } else if ( mouseX * 100 / screenWidth>=75){
                     layerTransform = "translateX(-100%)";
                 }
@@ -795,7 +808,7 @@ header {
             options: {
                 scales: {
                         x: {
-                            type: 'time', 
+                            type:'category', 
                             position: 'bottom',
                         },
                         y: {
@@ -814,4 +827,3 @@ header {
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA8UuMACOY60siOk58pGAyDzmyjhzIOGYk&callback=initMap&libraries=places,geometry&solution_channel=GMP_QB_commutes_v2_c" async defer></script>
     </body>
 </html>
-    

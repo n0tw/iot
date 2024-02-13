@@ -268,9 +268,8 @@ async def start_video_async(station, location):
 async def update_locations_async():
     global row, processing_video, video_ended_event
     row = 1
-    end_row = 123
 
-    while row <= end_row:
+    while True:
         excel_file_path = os.path.join(file_in_parent_folder, "Routes.xlsx")
         result = await read_locations(
             file_path=excel_file_path,
@@ -283,9 +282,9 @@ async def update_locations_async():
             locations, station = result
             await send_data_async(locations)
             print(locations)
-            t = 3
+            t = 1
             if station:
-                t = 10
+                t = 3
                 print("station[0]", station[0])
                 if station[0] == [{'Station': 'Ermou'}]:
                     print(station)
@@ -301,6 +300,9 @@ async def update_locations_async():
                     await faker_async(station, locations)
                     video_ended_event.wait()
                     video_ended_event.clear()
+                elif station[0] == [{'Station': 'Hospital'}]:
+                    await faker_async(station, locations)
+                    row = 0
                 else:
                     await faker_async(station, locations)
 

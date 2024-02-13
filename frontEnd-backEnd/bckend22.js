@@ -4,11 +4,9 @@ const axios = require('axios');
 const bodyParser = require('body-parser');
 const fetch = require('node-fetch');
 const http = require('http');
-const socketIo = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
 const nodemailer = require('nodemailer');
 
 const PORT = 8080;
@@ -23,42 +21,16 @@ let congestions = [];
 
 app.use(bodyParser.json());
 app.use(cors({
-    origin: '*',
+    origin: 'http://127.0.0.1:8080',
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(cors({
-    origin: '*',
+    origin: 'http://127.0.0.1:8000',
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-/* const changePeopleCount= async (entityId, updatedValue) => {
-    fetch(`http://150.140.186.118:1026/v2/entities/${entityId}/attrs`, {
-        method: 'PATCH', 
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            peopleCount: {
-                "type": "Property",
-                "value": updatedValue
-            }
-        }),
-    })
-    .then(response => {
-        if (response.ok) {
-            console.log(`Attribute 'peopleCount' of entity ${entityId} updated successfully`);
-        } else {
-            console.error(`Failed to update attribute 'peopleCount' of entity ${entityId}. Status: ${response.status}`);
-        }
-
-        return response.text();
-    })
-    .then(responseText => console.log('Response Body:', responseText))
-    .catch(error => console.error('Error:', error));
-};
- */
 const transporter = nodemailer.createTransport({
     pool: true,
     service: 'hotmail',
@@ -435,6 +407,3 @@ app.get('/getDataAvgPeopleByTime', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-
-
-   
