@@ -12,7 +12,7 @@
 ## Python packages:
 + For python packages needed, in your main folder, run:
 ```bash
-pip install Flask pymongo Flask-RESTful requests aiohttp flask schedule opencv-python torch ultralytics supervisely paho-mqtt numpy pandas torchvision detectron2
+pip install Flask pymongo Flask-RESTful requests aiohttp flask[async] schedule opencv-python torch ultralytics supervisely paho-mqtt numpy pandas torchvision detectron2 IPython openpyxl
 ```
 + If detectron2 fails to install, use this command instead:
 ```bash

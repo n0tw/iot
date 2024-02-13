@@ -28,7 +28,7 @@ def save_words_to_file(file_path, words):
 def collect_chat_ids():
     global chatIDs
 
-    file_path = "C:/Users/pangl/Desktop/GitRepo/Pan/fakers/chatIds.txt"  # Change this to the path of your txt file
+    file_path = "chatIds.txt"  # Change this to the path of your txt file
 
     # Read words from the file
     chat_ids = read_words_from_file(file_path)
