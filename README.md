@@ -27,9 +27,10 @@ npm install express cors axios body-parser node-fetch@2.6.1 nodemailer xlsx sock
 
 # How to run:
    
-## Double click run_commands.dat 
-### Or in externalDB folder open cmd and type:
++ Double click run_commands.dat
+or
++ In main folder open cmd and type:
 ```bash
-docker compose up --build
+run_commands.dat
 ```
 
