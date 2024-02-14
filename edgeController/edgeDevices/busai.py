@@ -40,7 +40,7 @@ parent_folder = os.path.abspath(os.path.join(current_script_directory, os.pardir
 parent_of_parent = os.path.abspath(os.path.join(parent_folder, os.pardir))
 
 # Specify the file name you want to access in the parent folder
-file_in_parent_folder = os.path.join(parent_of_parent, 'GitRepo_LargeFiles/bus-raspberry')
+file_in_parent_folder = os.path.join(parent_of_parent, 'GitRepo_LargeFiles\bus-raspberry')
 
 SUBWAY_VIDEO_PATH = os.path.join(file_in_parent_folder, "iot_bus.mp4")
 YOLO_PATH = os.path.join(file_in_parent_folder, "yolov8s.pt")

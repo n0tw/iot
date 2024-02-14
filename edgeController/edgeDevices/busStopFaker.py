@@ -36,7 +36,7 @@ parent_folder = os.path.abspath(os.path.join(current_script_directory, os.pardir
 parent_of_parent = os.path.abspath(os.path.join(parent_folder, os.pardir))
 
 # Specify the file name you want to access in the parent folder
-file_in_parent_folder = os.path.join(parent_of_parent, 'GitRepo_LargeFiles/Pan/Fakers')
+file_in_parent_folder = os.path.join(parent_of_parent, 'GitRepo_LargeFiles\Pan\Fakers')
 
 pause_flag_0 = False
 pause_flag_5 = False
