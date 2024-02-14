@@ -27,12 +27,14 @@ const openHTMLFilesWithDelay = () => {
   };
 
   htmlFiles.forEach((file, index) => {
-    // Introduce a delay of 2 seconds for each HTML file (adjust as needed)
+    // Introduce a delay of 5 seconds for the first HTML file, and 2 seconds for the rest (adjust as needed)
+    const delay = index === 0 ? 5000 : index * 5000;
     setTimeout(() => {
       openFile(file);
-    }, index * 5000);
+    }, delay);
   });
 };
+
 
 const runCommandInNewTerminal = (command) => {
   if (os.platform() === 'win32') {

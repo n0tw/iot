@@ -1,6 +1,6 @@
 :: Change to externalDB folder and run docker compose
 cd externalDB
-docker-compose up --build
+docker-compose up -d
 timeout /t 2
 
 :: Change to edgeController folder and run Python script

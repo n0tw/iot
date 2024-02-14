@@ -40,10 +40,11 @@ parent_folder = os.path.abspath(os.path.join(current_script_directory, os.pardir
 parent_of_parent = os.path.abspath(os.path.join(parent_folder, os.pardir))
 
 # Specify the file name you want to access in the parent folder
-file_in_parent_folder = os.path.join(parent_of_parent, 'GitRepo_LargeFiles\bus-raspberry')
+file_in_parent_folder = os.path.join(parent_of_parent, 'GitRepo_LargeFiles')
+subfile = os.path.join(file_in_parent_folder, 'bus-raspberry')
 
-SUBWAY_VIDEO_PATH = os.path.join(file_in_parent_folder, "iot_bus.mp4")
-YOLO_PATH = os.path.join(file_in_parent_folder, "yolov8s.pt")
+SUBWAY_VIDEO_PATH = os.path.join(subfile, 'iot_bus.mp4')
+YOLO_PATH = os.path.join(file_in_parent_folder, 'yolov8s.pt')
 
 model = YOLO(YOLO_PATH)
 
@@ -176,7 +177,7 @@ async def read_locations(file_path, start_row=None, end_row=None, skip_value=Non
         else:
             if start_row + 1 < 123:
                 return await read_locations(
-                    file_path=os.path.join(file_in_parent_folder, "Routes.xlsx"),
+                    file_path=os.path.join(subfile, "Routes.xlsx"),
                     start_row=start_row + 1,
                     end_row=end_row + 1,
                     skip_value="-"
@@ -270,7 +271,7 @@ async def update_locations_async():
     row = 1
 
     while True:
-        excel_file_path = os.path.join(file_in_parent_folder, "Routes.xlsx")
+        excel_file_path = os.path.join(subfile, "Routes.xlsx")
         result = await read_locations(
             file_path=excel_file_path,
             start_row=row,

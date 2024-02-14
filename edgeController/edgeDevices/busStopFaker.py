@@ -36,7 +36,9 @@ parent_folder = os.path.abspath(os.path.join(current_script_directory, os.pardir
 parent_of_parent = os.path.abspath(os.path.join(parent_folder, os.pardir))
 
 # Specify the file name you want to access in the parent folder
-file_in_parent_folder = os.path.join(parent_of_parent, 'GitRepo_LargeFiles\Pan\Fakers')
+file_in_parent_folder = os.path.join(parent_of_parent, 'GitRepo_LargeFiles')
+subfilePan = os.path.join(file_in_parent_folder, 'Pan')
+subfile = os.path.join(subfilePan, 'Fakers')
 
 pause_flag_0 = False
 pause_flag_5 = False
@@ -281,9 +283,9 @@ async def run_when_paused(session):
         frame_height = 480
 
         #cap = cv2.VideoCapture(0)
-        VIDEO_PATH =  os.path.join(file_in_parent_folder, "prytan.mp4")
-        #YOLO_PATH = os.path.join(file_in_parent_folder, "crowdhuman_yolo5m.pt")
-        YOLO_PATH = os.path.join(file_in_parent_folder, "yolov8l.pt")
+        VIDEO_PATH =  os.path.join(subfile, "prytan.mp4")
+        #YOLO_PATH = os.path.join(subfile, "crowdhuman_yolo5m.pt")
+        YOLO_PATH = os.path.join(subfile, "yolov8l.pt")
 
         cap = cv2.VideoCapture(VIDEO_PATH)
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, frame_width)

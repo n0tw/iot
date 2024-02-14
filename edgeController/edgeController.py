@@ -142,6 +142,7 @@ async def receive_station_data():
 
     data = request.get_json()
 
+    timeNow = datetime.datetime.now().isoformat()
     tSid = data['id']
     tSlocation = data['location']
     tSname = data['name']
@@ -185,7 +186,7 @@ async def receive_station_data():
     if (cont_resp is None or 'error' in cont_resp):
         transportStationData['dateObserved']= {
                 "type": "DateTime",
-                "value": datetime.datetime.now().isoformat()
+                "value": timeNow
             }
         transportStationData['crowdFlowObserved']= {
                 "type": "CrowdFlowObserved",
@@ -193,7 +194,7 @@ async def receive_station_data():
             }
         transportStationData['dateLastReported']= {
                 "type": "DateTime",
-                "value": datetime.datetime.now().isoformat()
+                "value": timeNow
             }
         transportStationData['vehicleLastReported']= {
                 "type": "Vehicle",
