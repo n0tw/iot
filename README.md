@@ -27,17 +27,10 @@ npm install express cors axios body-parser node-fetch@2.6.1 nodemailer xlsx sock
 
 # How to run:
    
-1. In externalDB folder open cmd and type:
++ Double click run_commands.dat
+  
+> *Or in main folder open cmd and type:*
 ```bash
-docker compose up --build
-```
-    
-2. In edgeController folder open cmd and type:
-```bash
-python run_scripts.py
+run_commands.dat
 ```
 
-3. In frontEnd-backEnd folder open cmd and type:
-```bash
-node start-scripts.js
-```
