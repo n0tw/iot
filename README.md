@@ -26,9 +26,10 @@ npm install express cors axios body-parser node-fetch@2.6.1 nodemailer xlsx sock
 ```
 
 # How to run:
-   
-+ Double click run_commands.dat
-  
+
+1. Open Docker Desktop
+
+2. Double click run_commands.dat
 > *Or in main folder open cmd and type:*
 ```bash
 run_commands.dat
