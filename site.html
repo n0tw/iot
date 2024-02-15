@@ -17,10 +17,10 @@
         font-family: "Assistant", sans-serif;
         position: relative;
         min-height: 100vh;
-        background: url('bck0.png') center/cover no-repeat;
+        /* background: url('bck0.png') center/cover no-repeat; */
     }
     header{
-        background-color: rgb(132, 144, 126);
+        background-color: rgb(201, 201, 201);
     }
     body::before {
         content: "";
@@ -33,9 +33,9 @@
         z-index: -1;
     }
     #map{
-        border: 10px;
-        border : 3.5px solid #6b746e;
-        border-radius: 3%;
+        border: 8px;
+        border : 3.5px solid #0b86eb;
+        border-radius: 2%;
     }
     .info {
         display: flex;
@@ -51,6 +51,7 @@
     }
 
 #bus-table {
+    background-color: #c0ccd560;
     border-collapse: collapse;
     margin-top: 20px; /* Add some space between the table and content_space */
     text-align: left; /* Center table contents */
@@ -65,8 +66,8 @@
 
     
 #content_space {
-    width: 80%; /* Adjust width as needed */
-    height: 40px; /* Set a fixed height or adjust as needed */
+    width: 80%; 
+    height: 40px; 
     text-align: center;
 }
     #bus-table{
@@ -604,11 +605,11 @@ async function drive_toStation(origin, destination) {
         if (busesdurs !==null){
             console.log("busesdurs", busStations[busesdurs[0][1]].position, `${busStations[busesdurs[0][1]].getPosition().lat()}, ${busStations[busesdurs[0][1]].getPosition().lng()}`);
             //document.getElementById("content_space").innerHTML = `<h5>Station: ${ busStations[busesdurs[0][1]].title }. In ${parseInt(busesdurs[0][2]/60)+1 } mins. </h5>`
-            info =  `<h5>In just ${parseInt(busesdurs[0][2]/60)+1 } minutes, you'll be able to board your bus from ${ busStations[busesdurs[0][1]].title } station! :) </h5>`
+            info =  `<h5>In just ${parseInt(busesdurs[0][2]/60)+1 } minutes, you'll be able to board your bus from ${ busStations[busesdurs[0][1]].title } station! </h5>`
             updateMapFrame(`${busStations[busesdurs[0][1]].getPosition().lat()}, ${busStations[busesdurs[0][1]].getPosition().lng()}`, 20);
             var contentString = '<div id="content">' +
                         /* '<h6 id="firstHeading" class="firstHeading">'+busStations[busesdurs[0][1]].title +'</h6>' + */
-                        '<p id ="info" style="border-radius: 5%; width:5% background-color: #95c56e; padding: 10px;"><h6>'+info +'</h6></p>' +
+                        '<p id ="info" style="border-radius: 5%; font-size: 12px; background-color: #95c56e; padding: 10px;"><h6>'+info +'</h6></p>' +
                         '</div>';
 
             infoWindow.setContent(contentString);
