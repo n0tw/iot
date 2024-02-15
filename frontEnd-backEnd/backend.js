@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const socketIO = require('socket.io');
 const axios = require('axios');
 const bodyParser = require('body-parser');
 
@@ -21,9 +20,14 @@ const worksheet = workbook.Sheets[sheetName];
 app.use(bodyParser.json());
 
 app.use(cors({
-  origin: '*',
-  credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization'],
+    origin: 'http://127.0.0.1:3000',
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+app.use(cors({
+    origin: 'http://127.0.0.1:3030',
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 async function readexcel(){
@@ -91,11 +95,10 @@ const readEntityAttribute = async (entityId, attributeName) => {
 
 const readStationsLBinfo = async (entityId) => {
   try {
-      const dT = await readEntityAttribute(entityId, 'dateObserved');
+      const dT = await readEntityAttribute(entityId, 'dateLastReported');
       const l = await readEntityAttribute(entityId, "vehicleLastReported");
       len =("urn:ngsild:Vehicle:Bus:").length;
       cf = "urn:ngsild:CrowdFlowObserved:Bus:"+(l.value).slice(len, (l.value).length);
-      console.log("laaaaaaaaaaaaa", cf);
       const lb = await readEntityAttribute(cf, "alternateName");
 
       //console.log("name", await readEntityAttribute((await readEntityAttribute(entityId, "crowdFlowObserved")).value, 'name'));
@@ -180,6 +183,8 @@ const updateStationData = async () => {
             const cf = await readEntityAttribute(bus, 'crowdFlowObserved');
             const congested = await readEntityAttribute(cf.value, 'congested');
             const locationData = await readEntityAttribute(bus, 'location');
+            const disc = await readEntityAttribute(bus, 'description');
+            
             if (!locationData) {
                 return;
             }
@@ -188,7 +193,8 @@ const updateStationData = async () => {
                 id: bus,
                 location: locationData,
                 congested: congested.value,
-                crowdflowid: cf.value
+                crowdflowid: cf.value,
+                description: disc.value
             };
                 
         }));
@@ -250,4 +256,3 @@ console.log("kkkkkk",buses);
   server.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}/`);
   });
-

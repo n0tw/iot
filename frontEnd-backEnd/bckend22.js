@@ -21,7 +21,12 @@ let congestions = [];
 
 app.use(bodyParser.json());
 app.use(cors({
-    origin: '*',
+    origin: 'http://127.0.0.1:8080',
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+app.use(cors({
+    origin: 'http://127.0.0.1:8000',
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
@@ -67,11 +72,42 @@ const readBusPCinfo = async (entityId) => {
     }
 }
 
+const readStationsLBinfo = async (entityId) => {
+    try {
+        const dT = await readEntityAttribute(entityId, 'dateLastReported');
+        const l = await readEntityAttribute(entityId, "vehicleLastReported");
+        len =("urn:ngsild:Vehicle:Bus:").length;
+        cf = "urn:ngsild:CrowdFlowObserved:Bus:"+(l.value).slice(len, (l.value).length);
+        const lb = await readEntityAttribute(cf, "alternateName");
+  
+        //console.log("name", await readEntityAttribute((await readEntityAttribute(entityId, "crowdFlowObserved")).value, 'name'));
+        return {
+            dateTime: dT,
+            lastbus: lb,
+        };
+        
+    }catch (error) {
+        console.error(`Error in readBusPCinfo ${entityId} :`, error.message);
+        return null;
+    }
+}
+
 app.get('/getBusPC', async (req, res) => {
     try {
         const buslasts = await readBusPCinfo(req.query.id);
         console.log(buslasts);
         res.json(buslasts);
+    } catch (error) {
+        console.error('Error:', error.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+app.get('/getStationsLB', async (req, res) => {
+    try {
+        const stationlasts = await readStationsLBinfo(req.query.id);
+        console.log(stationlasts);
+        res.json(stationlasts);
     } catch (error) {
         console.error('Error:', error.message);
         res.status(500).json({ error: 'Internal Server Error' });

@@ -3,7 +3,7 @@ body {
     font-family: Arial, sans-serif;
     position: relative;
     min-height: 100vh;
-    background: url('bck0.png') center/cover no-repeat;
+    /* background: url('bck0.png') center/cover no-repeat; */
 }
 
 header {
@@ -31,6 +31,8 @@ header {
     text-decoration: none;
     cursor: pointer;
 }
+
+
 
 #location_checkbox {
     /* display: flex; */
@@ -68,7 +70,7 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(255, 255, 255, 0.7); 
+    background-color: rgba(0, 0, 0, 0.5);  
     z-index: -1;
 }
 
@@ -114,10 +116,6 @@ body::before {
 
 .dropdown-content a:hover {
     background-color: #f1f1f1;
-}
-
-.search-input-dropdown:hover .dropdown-content {
-    display: block;
 }
 
 
