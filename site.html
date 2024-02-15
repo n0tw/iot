@@ -9,16 +9,46 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Istok+Web&display=swap">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <link rel="stylesheet" type="text/css" href="styles.css">
     <style>
+    body {
+        margin: 0;
+        font-family: "Assistant", sans-serif;
+        position: relative;
+        min-height: 100vh;
+        background: url('bck0.png') center/cover no-repeat;
+    }
+    header{
+        background-color: rgb(132, 144, 126);
+    }
+    body::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, #cfd3cfe2, #545e50df);
+        z-index: -1;
+    }
+    #map{
+        border: 10px;
+        border : 3.5px solid #6b746e;
+        border-radius: 3%;
+    }
     .info {
-    display: flex;
-    flex-direction: column;
-    justify-content: center; /* Center items vertically */
-    align-items: center; /* Center items horizontally */
-    padding-bottom: 5%;
-    position: relative;
-}
+        display: flex;
+        flex-direction: column;
+        justify-content: center; /* Center items vertically */
+        align-items: center; /* Center items horizontally */
+        padding-bottom: 5%;
+        position: relative;
+    }
+    #searchInput{
+        height: 25px;
+        border-radius: 2%;
+    }
 
 #bus-table {
     border-collapse: collapse;
@@ -41,6 +71,17 @@
 }
     #bus-table{
         visibility: hidden;
+    }
+
+    #enterButton{
+        top:10%;
+        margin: 5px;
+        align-self: right;
+        border: 0.05;
+        border-radius: 10%;
+        border-color: aliceblue;
+        background-color: rgb(235, 223, 217);
+        /* color: #95c56e; */
     }
     </style>
       
@@ -68,19 +109,19 @@
                 <div class="map-container" id="map"></div>
                 <div class="dropdown">
                     <h5>Find the bus information you need</h3>
-                    <div class="search-input-dropdown">
+                    <div id="search-input-dropdown">
                         <input type="text" id="searchInput" placeholder="Search...">
                     
-                    <div class="dropdown-content">
-                        <a id="1" href="#" data-value="38.27300585312582, 21.765157239518665">601 Πανεπιστήμιο - Νοσοκομείο</a>
-                        <a id="2" href="#" data-value="38.280435015240778,21.768746095218305">604 Πανεπιστήμιο - Νοσοκομείο - Ρίο</a>
-                        <a id="3" href="#" data-value="38.280435015240556,21.768746092828527">605 Πανεπιστήμιο - Νοσοκομείο - Άγ. Βασίλειος - Ρίο</a>
-                        <a id="4" href="#" data-value="38.280435015240556,21.768746092828414">609 Κέντρο</a>
+                        <div class="dropdown-content">
+                            <a id="1" href="#" data-value="38.27300585312582, 21.765157239518665">601 Πανεπιστήμιο - Νοσοκομείο</a>
+                            <a id="2" href="#" data-value="38.27300585312582, 21.765157239518665">604 Πανεπιστήμιο - Νοσοκομείο - Ρίο</a>
+                            <a id="3" href="#" data-value="38.27300585312582, 21.765157239518665">605 Πανεπιστήμιο - Νοσοκομείο - Άγ. Βασίλειος - Ρίο</a>
+                            <a id="4" href="#" data-value="38.27300585312582, 21.765157239518665">609 Κέντρο</a>
+                        </div><input id="timeinput" type="text" placeholder="Specify time (optional)">
                     </div>
-                    <input id="timeinput" type="text" placeholder="Specify time (optional)">
-                    </div>
+                    <button id="enterButton">Enter</button>
                     <div id="location_checkbox">
-                        <input type="checkbox" class="l1" id="location" onclick="getUserLocation()" name="Read location" value="no">
+                        <input type="checkbox" class="l1" id="location" onchange="getUserLocation()" name="Read location" value="no">
                         <label for="location" class="l1"> Read location</label><br>
                     </div>
                 </div>
@@ -114,9 +155,8 @@
     let durationList = [];
     var busStations = {};
     var busesvar = {};
-    var busvarcount = 0;
-    var time = null;
-    
+    var busvarcount = [];
+    const apiKey = 'AIzaSyA8UuMACOY60siOk58pGAyDzmyjhzIOGYk';
     const brokerIP = '150.140.186.118';
     const brokerPort = 9001;
     const brokerPath = '/mqtt';
@@ -172,10 +212,12 @@
             center: { lat: 38.24630509364979, lng: 21.735171687989045 },
             zoom: 14
         });
-        document.getElementById('map').style.width = '800px';
+        document.getElementById('map').style.width = '50%';/* '' */
+        //document.getElementById('map').style.border = '3px solid #0040d6'; 
         infoWindow = new google.maps.InfoWindow();
 
-        var markerSize = new google.maps.Size(30, 30);
+        var StnmarkerSize = new google.maps.Size(23, 23);
+        var markerSize = new google.maps.Size(42, 42);
         
 
         for (var i = 0; i < stations.length; i++) {
@@ -188,7 +230,7 @@
                 title: String(stations[i].name.value),
                 icon: {
                     url: 'Canberra_Bus_icon.svg.png',
-                    scaledSize: markerSize
+                    scaledSize: StnmarkerSize
                 }
             });
             busStations[i].addListener('click', (function (i, stationId) {
@@ -206,66 +248,31 @@
             })(i, busStations[i].id));
                 
         }
-        /* for (var i = 0; i < buses.length; i++) {
-            if (buses[i] ==null){
-                continue;
-            }
-            const location = buses[i].location.value;
-
-            const lat = parseFloat((location.coordinates).split(',')[0]);
-            const lng = parseFloat((location.coordinates).split(',')[1]);
-
-            console.log("lat lng", lat, lng, typeof(lat));
-            busesvar[i] = new google.maps.Marker({
-                id: buses[i].id,
-                position: new google.maps.LatLng(lat, lng) ,
-                congested: buses[i].congested,
-                crowdflowid: buses[i].crowdflowid,
-                map: map,
-                title: 'Bus ' + String(i+1),
-                icon: {
-                    url: 'bus.png',
-                    scaledSize: markerSize
-                }
-            });
-            console.log(`busesvar[${i}].congested`, busesvar[i].congested);
-        } */
     }
 
-function addBusMarkers(i,bus) {
-    var markerSize = new google.maps.Size(30, 30);
-    console.log(bus);
-    const location = bus.location.value;
-    const lat = parseFloat(location.coordinates.split(',')[0]);
-    const lng = parseFloat(location.coordinates.split(',')[1]);
-    busvarcount += 1;
-    busesvar[i] = new google.maps.Marker({
-        id: bus.id,
-        position: new google.maps.LatLng(lat, lng),
-        congested: bus.congested,
-        crowdflowid: bus.crowdflowid,
-        map: map,
-        title: 'Bus ' + String(i + 1),
-        icon: {
-            url: 'bus.png',
-            scaledSize: markerSize
-        }
-    });
-    console.log(`busesvar[${i}].congested`, busesvar[i].congested);
-}
+    function addBusMarkers(i,bus) {
+        var markerSize = new google.maps.Size(42, 42);
+        console.log(bus);
+        const location = bus.location.value;
+        const lat = parseFloat(location.coordinates.split(',')[0]);
+        const lng = parseFloat(location.coordinates.split(',')[1]);
+        busvarcount.push(i);
+        busesvar[i] = new google.maps.Marker({
+            id: bus.id,
+            position: new google.maps.LatLng(lat, lng),
+            congested: bus.congested,
+            crowdflowid: bus.crowdflowid,
+            map: map,
+            title: 'Bus ' + String(i + 1),
+            icon: {
+                url: 'pngwing.com.png',
+                scaledSize: markerSize
+            }
+        });
+        console.log(`busesvar[${i}].congested`, busesvar[i].congested);
+    }
 
-    const apiKey = 'AIzaSyA8UuMACOY60siOk58pGAyDzmyjhzIOGYk';
-    //destination = '38.280435015240556,21.768746092828305';
-    document.addEventListener('DOMContentLoaded', function () {
-        window.addEventListener('click', handleWindowClick);
-        
-        const timeinput = document.getElementById('timeinput');
-        timeinput.addEventListener('input', handleTimeInput);
-        const searchInput = document.getElementById('searchInput');
-        searchInput.addEventListener('input', handleSearchInput);
-    });
-
-    function initializetable(data){
+    function initializetable(time, data){
         document.getElementById("bus-table").style.visibility = "visible";
         const tableBody = document.getElementById('bus-table-body');
 
@@ -298,42 +305,45 @@ function addBusMarkers(i,bus) {
             }
 
         }
-        
-
         data.forEach(rowData => {
             const row = document.createElement('tr');
-            const timeinput = document.getElementById('timeinput');
-            timeinput.addEventListener('input', handleTimeInput);
-        
+            
             if (time!= null && col !=-1){
                 const cellData0 = rowData[0];
-                const cellData = rowData[col];
+                let cellData = rowData[col];
                 const cell0 = document.createElement('td');
                 const cell = document.createElement('td');
                 cell0.textContent = cellData0;
+                cD = cellData.split(':');
+                cellData = `${cD[0]}:${cD[1]}`;
                 cell.textContent = cellData;
                 row.appendChild(cell0);
                 row.appendChild(cell);
-
             }
             else{
+                i =0;
                 rowData.forEach(cellData => {
                     const cell = document.createElement('td');
+                    if (i%8 !=0){
+                        cD = cellData.split(':');
+                        cellData = `${cD[0]}:${cD[1]}`;
+                    }
                     cell.textContent = cellData;
                     row.appendChild(cell);
+                    i =i+1;
                 });
                 
             }
             tableBody.appendChild(row);
         });
-}
+    }
 
-    async function readexcel(){
+    async function readexcel(time){
         try {
             const response = await fetch(`http://localhost:3000/getalltheroutes`);
             data = await response.json();
             console.log("data ",data);
-            initializetable(data);
+            initializetable(time,data);
         } catch (error) {
             console.error('Error fetching location:', error.message);
         }
@@ -344,12 +354,11 @@ function addBusMarkers(i,bus) {
     async function handleWindowClick(event) {
         const dropdownContent = event.target.closest('.dropdown-content');
         
-        
         if (dropdownContent) {
-            updateMapFrame(event.target);
-            await readexcel();
+            updateMapFrame((event.target).getAttribute('data-value'), 12.87);
         }
     }
+
     document.addEventListener('DOMContentLoaded', () => {
         fetch('http://127.0.0.1:3000/getBusInfo')
             .then(response => response.json())
@@ -376,7 +385,44 @@ function addBusMarkers(i,bus) {
             })
             .catch(error => console.error('Error fetching data:', error));
             
-        
+            window.addEventListener('click', handleWindowClick);
+        const timeinput = document.getElementById('timeinput');
+        const searchInput = document.getElementById('searchInput');
+        const searchInputDropdown = document.getElementById('search-input-dropdown');
+        const dropdownContent = document.querySelector('.dropdown-content');
+        let selectedOption ;
+        let target =null;
+
+        searchInput.addEventListener('input', handleSearchInput);
+        searchInput.addEventListener('mouseover', function () {
+            dropdownContent.style.display = 'block';
+        });
+
+        // Event listener for click on dropdown items
+        dropdownContent.addEventListener('click', function (event) {
+            target = event.target;
+            console.log("target", target);
+        });
+
+        window.addEventListener('mouseout', function (event) {
+            if (!searchInputDropdown.contains(event.target)) {
+                dropdownContent.style.display = 'none';
+            }
+        });
+
+        enterButton.addEventListener('click', async function() {
+            if (target!=null){
+                // Get selected option value
+                let time = timeinput.value.trim();
+                if (time==""){
+                    time = null;
+                }
+                console.log(time);
+                
+                await readexcel(time);
+            }
+            
+        });
     });
 
     function updateCrowdData(topic, payload){
@@ -388,8 +434,8 @@ function addBusMarkers(i,bus) {
 
         busesIndex = buses.findIndex(entry => entry.crowdflowid === id);
         busesvarIndex =-1;
-        for (var i = 0; i < busvarcount; i++) {
-            if (busesvar[i] && busesvar[i].crowdflowid === id) {
+        for (var i = 0; i < busvarcount.length; i++) {
+            if (busesvar[busvarcount[i]] && busesvar[busvarcount[i]].crowdflowid === id) {
                 busesvarIndex= i;
             }
         }
@@ -409,13 +455,13 @@ function addBusMarkers(i,bus) {
 
         busesIndex = buses.findIndex(entry => entry.id === id);
         busesvarIndex =-1;
-        for (var i = 0; i < busvarcount; i++) {
-            if (busesvar[i] && busesvar[i].id === id) {
+        for (var i = 0; i < busvarcount.length; i++) {
+            if (busesvar[busvarcount[i]] && busesvar[busvarcount[i]].id === id) {
                 busesvarIndex= i;
             }
         }
         if (busesvarIndex==-1){
-            addBusMarkers(i,buses[busesIndex]);
+            addBusMarkers(busesIndex,buses[busesIndex]);
             console.log("busesvar.length",busvarcount);
         }
 
@@ -441,21 +487,13 @@ function addBusMarkers(i,bus) {
         });
     }
 
-    function handleTimeInput() {
-        time = this.value.trim();
-        if (time==""){
-            time = null;
-        }
-        console.log("time",time);
-    }
 
     async function getStationLastUpdate(i,stationId) {
         try {
             const response = await fetch(`http://localhost:3000/getStationsLB?id=${stationId}`);
             const data = await response.json();
-            text = `Last bus seen: ${data.lastbus.value}. At: ${data.dateTime.value}`;
+            text = `Last bus seen: ${data.lastbus.value}. At: ${moment(data.dateTime.value).format('MMMM Do YYYY, HH:mm:ss')}`;
             d = await findBusandTime([[i, 0]]);
-            console.log("dddddddddd",d);
             if (d!==null){
                 time = d[0][2];
                 text = text +`\n${busesvar[d[0][0]].title} is going to arrive in ${parseInt(time/60)+1} mins`;
@@ -507,7 +545,7 @@ async function drive_toStation(origin, destination) {
         if (data.status === "OK") {
             data.routes.forEach((route, index) => {
                 times.push(data.routes[0].legs[0].duration.value);
-                console.log("drive time",data.routes[0].legs[0].duration.value);
+                //console.log("drive time",data.routes[0].legs[0].duration.value);
             })
         return Math.min(...times);
     } else {
@@ -523,8 +561,7 @@ async function drive_toStation(origin, destination) {
 
 
     // Function to update the map frame based on the clicked element
-    function updateMapFrame(clickedElement) {
-        const selectedLocation = clickedElement.getAttribute('data-value');
+    function updateMapFrame(selectedLocation, zoom) {
         console.log("selected location: ", selectedLocation);
         const [lat, lng] = selectedLocation.split(',').map(parseFloat);
         console.log("lat lng: ", lat, lng);
@@ -532,15 +569,17 @@ async function drive_toStation(origin, destination) {
         /* const mapUrl = `https://www.google.com/maps/embed/v1/place?q=${selectedLocation}&key=${apiKey}`;
         document.getElementById("map").src = mapUrl; */
         map.setCenter(newCenter);
-        map.setZoom(12.87);
+        map.setZoom(zoom);
     }
 
     // Function to get the user's location
     function getUserLocation() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(showPosition, showError);
-        } else {
-            alert("Geolocation is not supported by this browser.");
+        if (document.getElementById("location").checked) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
         }
     }
 
@@ -548,14 +587,13 @@ async function drive_toStation(origin, destination) {
         var latitude = position.coords.latitude;
         var longitude = position.coords.longitude;
         origin= `${latitude},${longitude}`;
-        console.log("origin ",origin)
-        //console.log("destination ",destination)
+        console.log("origin ",origin);
         getdestination(origin);
     }
 
     async function getdestination(origin){
         durationList = [];
-        
+        document.getElementById("content_space").innerHTML = "";
         for (var i = 0; i < stations.length; i++) {
             console.log("fhjljgyhg",`${busStations[i].getPosition().lat()},${busStations[i].getPosition().lng()}`, origin);
             await walk_toStation(i, origin, `${busStations[i].getPosition().lat()},${busStations[i].getPosition().lng()}`);
@@ -564,8 +602,17 @@ async function drive_toStation(origin, destination) {
         console.log(durationList);
         busesdurs = await findBusandTime(durationList);
         if (busesdurs !==null){
-            console.log("busesdurs", busesdurs);
-            document.getElementById("content_space").innerHTML = `<h5>Station: ${ busStations[busesdurs[0][1]].title }. In ${parseInt(busesdurs[0][2]/60)+1 } mins. </h5>`
+            console.log("busesdurs", busStations[busesdurs[0][1]].position, `${busStations[busesdurs[0][1]].getPosition().lat()}, ${busStations[busesdurs[0][1]].getPosition().lng()}`);
+            //document.getElementById("content_space").innerHTML = `<h5>Station: ${ busStations[busesdurs[0][1]].title }. In ${parseInt(busesdurs[0][2]/60)+1 } mins. </h5>`
+            info =  `<h5>In just ${parseInt(busesdurs[0][2]/60)+1 } minutes, you'll be able to board your bus from ${ busStations[busesdurs[0][1]].title } station! :) </h5>`
+            updateMapFrame(`${busStations[busesdurs[0][1]].getPosition().lat()}, ${busStations[busesdurs[0][1]].getPosition().lng()}`, 20);
+            var contentString = '<div id="content">' +
+                        /* '<h6 id="firstHeading" class="firstHeading">'+busStations[busesdurs[0][1]].title +'</h6>' + */
+                        '<p id ="info" style="border-radius: 5%; width:5% background-color: #95c56e; padding: 10px;"><h6>'+info +'</h6></p>' +
+                        '</div>';
+
+            infoWindow.setContent(contentString);
+            infoWindow.open(map, busStations[busesdurs[0][1]]);
         }else{
             document.getElementById("content_space").innerHTML = "No bus is coming";
         }
@@ -576,38 +623,38 @@ async function drive_toStation(origin, destination) {
     async function findBusandTime(durationList){
         const busesdurs = [];
         console.log("busesvar.length", busvarcount);
-        for (var i = 0; i < busvarcount; i++) {
-            console.log("congested",i,busesvar[i].congested);
-            if (busesvar[i].congested==false){
-                lastStation = await getBusDirection(busesvar[i].crowdflowid);
+        for (var i = 0; i < busvarcount.length; i++) {
+            console.log("congested",i,busvarcount[i],busesvar[busvarcount[i]].congested);
+            if (/* busesvar[busvarcount[i]].congested==false */true){
+                lastStation = await getBusDirection(busesvar[busvarcount[i]].crowdflowid);
 
                 let lastStation_location ;
-
+                let last = 0;
                 for (const station of Object.values(busStations)) {
                     if (station.title === lastStation) {
                         lastStation_location = `${station.getPosition().lat()},${station.getPosition().lng()}`
                         break;
                     }
+                    last=last+1;
                 }
 
-                console.log(busesvar[i].title, lastStation);
+                console.log(busesvar[busvarcount[i]].title, lastStation, busvarcount[i]);
                 ind =durationList[0][0];
-                console.log("ind", ind, `${busStations[ind].getPosition().lat()},${busStations[ind].getPosition().lng()}`, `${busesvar[i].getPosition().lat()},${busesvar[i].getPosition().lng()}`);
-                time1 = await drive_toStation(`${busStations[ind].getPosition().lat()},${busStations[ind].getPosition().lng()}`, `${busesvar[i].getPosition().lat()},${busesvar[i].getPosition().lng()}`);
-                console.log("time1", time1, `${busStations[ind].getPosition().lat()},${busStations[ind].getPosition().lng()}`, lastStation_location);
-                time2 = await drive_toStation(`${busStations[ind].getPosition().lat()},${busStations[ind].getPosition().lng()}`, lastStation_location);
-                if(time2>=time1){
-                    console.log("eligible");
+                time1 = await drive_toStation(`${busStations[ind].getPosition().lat()},${busStations[ind].getPosition().lng()}`, `${busesvar[busvarcount[i]].getPosition().lat()},${busesvar[busvarcount[i]].getPosition().lng()}`);
+                console.log("time1", durationList[0][1]);
+                if(buses[i].description == "601" && last< ind){
+                    console.log("eligible", last, ind);
                     j=0;
                     while (time1<durationList[j][1] && j+1<durationList.length){
                         j=j+1;
                         ind =durationList[j][0];
-                        time1 = await drive_toStation(`${busStations[ind].getPosition().lat()},${busStations[ind].getPosition().lng()}`, `${busesvar[i].getPosition().lat()},${busesvar[i].getPosition().lng()}`);
+                        time1 = await drive_toStation(`${busStations[ind].getPosition().lat()},${busStations[ind].getPosition().lng()}`, `${busesvar[busvarcount[i]].getPosition().lat()},${busesvar[busvarcount[i]].getPosition().lng()}`);
+                        console.log("time2", time1, durationList[j][1]);
                     }
                     if (time1>=durationList[j][1]){
-                        busesdurs.push([i,ind, time1]);
+                        busesdurs.push([busvarcount[i],ind, time1]);
                     }else{
-                        return null;
+                        continue;
                     }
                 }
             }

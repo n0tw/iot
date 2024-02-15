@@ -95,11 +95,10 @@ const readEntityAttribute = async (entityId, attributeName) => {
 
 const readStationsLBinfo = async (entityId) => {
   try {
-      const dT = await readEntityAttribute(entityId, 'dateObserved');
+      const dT = await readEntityAttribute(entityId, 'dateLastReported');
       const l = await readEntityAttribute(entityId, "vehicleLastReported");
       len =("urn:ngsild:Vehicle:Bus:").length;
       cf = "urn:ngsild:CrowdFlowObserved:Bus:"+(l.value).slice(len, (l.value).length);
-      console.log("laaaaaaaaaaaaa", cf);
       const lb = await readEntityAttribute(cf, "alternateName");
 
       //console.log("name", await readEntityAttribute((await readEntityAttribute(entityId, "crowdFlowObserved")).value, 'name'));
@@ -184,6 +183,8 @@ const updateStationData = async () => {
             const cf = await readEntityAttribute(bus, 'crowdFlowObserved');
             const congested = await readEntityAttribute(cf.value, 'congested');
             const locationData = await readEntityAttribute(bus, 'location');
+            const disc = await readEntityAttribute(bus, 'description');
+            
             if (!locationData) {
                 return;
             }
@@ -192,7 +193,8 @@ const updateStationData = async () => {
                 id: bus,
                 location: locationData,
                 congested: congested.value,
-                crowdflowid: cf.value
+                crowdflowid: cf.value,
+                description: disc.value
             };
                 
         }));
