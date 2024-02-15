@@ -40,8 +40,8 @@
     .info {
         display: flex;
         flex-direction: column;
-        justify-content: center; /* Center items vertically */
-        align-items: center; /* Center items horizontally */
+        justify-content: center;
+        align-items: center;
         padding-bottom: 5%;
         position: relative;
     }
@@ -53,8 +53,8 @@
 #bus-table {
     background-color: #c0ccd560;
     border-collapse: collapse;
-    margin-top: 20px; /* Add some space between the table and content_space */
-    text-align: left; /* Center table contents */
+    margin-top: 20px; 
+    text-align: left; 
 }
 
 #bus-table th, #bus-table td {
@@ -112,13 +112,11 @@
                     <h5>Find the bus information you need</h3>
                     <div id="search-input-dropdown">
                         <input type="text" id="searchInput" placeholder="Search...">
-                    
                         <div class="dropdown-content">
                             <a id="1" href="#" data-value="38.27300585312582, 21.765157239518665">601 Πανεπιστήμιο - Νοσοκομείο</a>
                             <a id="2" href="#" data-value="38.27300585312582, 21.765157239518665">604 Πανεπιστήμιο - Νοσοκομείο - Ρίο</a>
                             <a id="3" href="#" data-value="38.27300585312582, 21.765157239518665">605 Πανεπιστήμιο - Νοσοκομείο - Άγ. Βασίλειος - Ρίο</a>
-                            <a id="4" href="#" data-value="38.27300585312582, 21.765157239518665">609 Κέντρο</a>
-                        </div><input id="timeinput" type="text" placeholder="Specify time (optional)">
+                        </div><input id="timeinput" type="text" placeholder="Specify time-HH:MM (optional)">
                     </div>
                     <button id="enterButton">Enter</button>
                     <div id="location_checkbox">
@@ -194,10 +192,8 @@
     }
 
     function onMessageArrived(message) {
-        //console.log(`Received message on topic ${message.destinationName}: ${message.payloadString}`);
         const payload = JSON.parse(message.payloadString);
         const type= payload.type
-        console.log(type);
         if (type=="CrowdFlowObserved"){
             updateCrowdData(message.destinationName, payload);
         }else if (type=="Vehicle"){
@@ -223,7 +219,6 @@
 
         for (var i = 0; i < stations.length; i++) {
             const location = stations[i].location.value;
-            console.log("typeof(stations), typeof(stations[1])",typeof(stations), typeof(stations[1]))
             busStations[i] = new google.maps.Marker({
                 id: stations[i].id,
                 position: { lat:location.coordinates[0], lng:location.coordinates[1] },
@@ -236,7 +231,6 @@
             });
             busStations[i].addListener('click', (function (i, stationId) {
                 return function () {
-                    console.log("stationId", stationId);
                     getStationLastUpdate(i,stationId);
                     var contentString = '<div id="content">' +
                         '<h6 id="firstHeading" class="firstHeading">'+busStations[i].title+'</h6>' +
@@ -253,7 +247,6 @@
 
     function addBusMarkers(i,bus) {
         var markerSize = new google.maps.Size(42, 42);
-        console.log(bus);
         const location = bus.location.value;
         const lat = parseFloat(location.coordinates.split(',')[0]);
         const lng = parseFloat(location.coordinates.split(',')[1]);
@@ -270,7 +263,6 @@
                 scaledSize: markerSize
             }
         });
-        console.log(`busesvar[${i}].congested`, busesvar[i].congested);
     }
 
     function initializetable(time, data){
@@ -281,11 +273,7 @@
         if (time!= null){
             col=-1;
             const [hours, minutes] = time.split(':').map(str => parseFloat(str));
-            console.log(hours);
-            console.log(minutes);
-
             u = hours + (minutes / 60);
-            console.log("u",u);
             
             if (u>=5 && u<=6.5){
                 col = 1;
@@ -343,7 +331,6 @@
         try {
             const response = await fetch(`http://localhost:3000/getalltheroutes`);
             data = await response.json();
-            console.log("data ",data);
             initializetable(time,data);
         } catch (error) {
             console.error('Error fetching location:', error.message);
@@ -380,13 +367,12 @@
                     useSSL: false,
                 });
                 initMap(); 
-                //console.log(data);
                 
                 
             })
             .catch(error => console.error('Error fetching data:', error));
             
-            window.addEventListener('click', handleWindowClick);
+        window.addEventListener('click', handleWindowClick);
         const timeinput = document.getElementById('timeinput');
         const searchInput = document.getElementById('searchInput');
         const searchInputDropdown = document.getElementById('search-input-dropdown');
@@ -399,10 +385,15 @@
             dropdownContent.style.display = 'block';
         });
 
-        // Event listener for click on dropdown items
         dropdownContent.addEventListener('click', function (event) {
             target = event.target;
-            console.log("target", target);
+            searchInput.value = event.target.textContent.trim();
+            dropdownContent.style.display = 'none'; 
+        });
+        document.addEventListener('mousedown', function (event) {
+            if (!event.target.closest('.dropdown')) {
+                dropdownContent.style.display = 'none'; // Hide dropdown when clicking outside
+            }
         });
 
         window.addEventListener('mouseout', function (event) {
@@ -418,7 +409,6 @@
                 if (time==""){
                     time = null;
                 }
-                console.log(time);
                 
                 await readexcel(time);
             }
@@ -427,7 +417,6 @@
     });
 
     function updateCrowdData(topic, payload){
-        console.log("congested", payload.congested.value);
         congested = payload.congested.value;
         name = payload.alternateName.value;
 
@@ -444,7 +433,6 @@
             len =("urn:ngsild:CrowdFlowObserved:Bus:").length;
             n = (id).slice(len, id.length);
             index = Number(n-1);
-            console.log("cbcbcbc ",busesIndex, index);
 
             busesvar[index].congested = congested;
         }
@@ -463,22 +451,18 @@
         }
         if (busesvarIndex==-1){
             addBusMarkers(busesIndex,buses[busesIndex]);
-            console.log("busesvar.length",busvarcount);
         }
-
-        console.log("hhhhhhh ", busesIndex);
 
         loc = payload.location.value;
         const lat = parseFloat((loc.coordinates).split(',')[0]);
         const lng = parseFloat((loc.coordinates).split(',')[1]);
-        console.log(lat, lng, typeof(lat), loc, typeof(loc));
         (busesvar[busesIndex]).setPosition(new google.maps.LatLng(lat, lng));
     }
         
 
     // Function to handle input in the search box
     function handleSearchInput() {
-        const searchInput = document.getElementById('searchInput');
+        //const searchInput = document.getElementById('searchInput');
         const filter = searchInput.value.toLowerCase();
         const dropdownItems = document.querySelectorAll('.dropdown-content a');
 
@@ -503,8 +487,6 @@
             
             //document.getElementById("info").innerText = `Last bus seen: ${data.lastbus.value}. At: ${data.dateTime.value}\n The next bus is going to arrive in ${time}`;
         } catch (error) {
-            console.log(await findBusandTime([[i, 0]]));
-            //console.log(data.dateTime);
             console.error('Error fetching location:', error.message);
         }
     }
@@ -546,7 +528,6 @@ async function drive_toStation(origin, destination) {
         if (data.status === "OK") {
             data.routes.forEach((route, index) => {
                 times.push(data.routes[0].legs[0].duration.value);
-                //console.log("drive time",data.routes[0].legs[0].duration.value);
             })
         return Math.min(...times);
     } else {
@@ -563,9 +544,7 @@ async function drive_toStation(origin, destination) {
 
     // Function to update the map frame based on the clicked element
     function updateMapFrame(selectedLocation, zoom) {
-        console.log("selected location: ", selectedLocation);
         const [lat, lng] = selectedLocation.split(',').map(parseFloat);
-        console.log("lat lng: ", lat, lng);
         const newCenter = new google.maps.LatLng(lat, lng);
         /* const mapUrl = `https://www.google.com/maps/embed/v1/place?q=${selectedLocation}&key=${apiKey}`;
         document.getElementById("map").src = mapUrl; */
@@ -588,7 +567,6 @@ async function drive_toStation(origin, destination) {
         var latitude = position.coords.latitude;
         var longitude = position.coords.longitude;
         origin= `${latitude},${longitude}`;
-        console.log("origin ",origin);
         getdestination(origin);
     }
 
@@ -596,19 +574,14 @@ async function drive_toStation(origin, destination) {
         durationList = [];
         document.getElementById("content_space").innerHTML = "";
         for (var i = 0; i < stations.length; i++) {
-            console.log("fhjljgyhg",`${busStations[i].getPosition().lat()},${busStations[i].getPosition().lng()}`, origin);
             await walk_toStation(i, origin, `${busStations[i].getPosition().lat()},${busStations[i].getPosition().lng()}`);
         }
         durationList.sort((a, b) => a[1] - b[1]);
-        console.log(durationList);
         busesdurs = await findBusandTime(durationList);
         if (busesdurs !==null){
-            console.log("busesdurs", busStations[busesdurs[0][1]].position, `${busStations[busesdurs[0][1]].getPosition().lat()}, ${busStations[busesdurs[0][1]].getPosition().lng()}`);
-            //document.getElementById("content_space").innerHTML = `<h5>Station: ${ busStations[busesdurs[0][1]].title }. In ${parseInt(busesdurs[0][2]/60)+1 } mins. </h5>`
             info =  `<h5>In just ${parseInt(busesdurs[0][2]/60)+1 } minutes, you'll be able to board your bus from ${ busStations[busesdurs[0][1]].title } station! </h5>`
             updateMapFrame(`${busStations[busesdurs[0][1]].getPosition().lat()}, ${busStations[busesdurs[0][1]].getPosition().lng()}`, 20);
             var contentString = '<div id="content">' +
-                        /* '<h6 id="firstHeading" class="firstHeading">'+busStations[busesdurs[0][1]].title +'</h6>' + */
                         '<p id ="info" style="border-radius: 5%; height: 2px; background-color: #95c56e; padding: 10px;"><h6 style=" font-size: 10px; ">'+info +'</h6></p>' +
                         '</div>';
 
@@ -623,9 +596,7 @@ async function drive_toStation(origin, destination) {
 
     async function findBusandTime(durationList){
         const busesdurs = [];
-        console.log("busesvar.length", busvarcount);
         for (var i = 0; i < busvarcount.length; i++) {
-            console.log("congested",i,busvarcount[i],busesvar[busvarcount[i]].congested);
             if ( busesvar[busvarcount[i]].congested==false ){
                 lastStation = await getBusDirection(busesvar[busvarcount[i]].crowdflowid);
 
@@ -639,18 +610,15 @@ async function drive_toStation(origin, destination) {
                     last=last+1;
                 }
 
-                console.log(busesvar[busvarcount[i]].title, lastStation, busvarcount[i]);
                 ind =durationList[0][0];
                 time1 = await drive_toStation(`${busStations[ind].getPosition().lat()},${busStations[ind].getPosition().lng()}`, `${busesvar[busvarcount[i]].getPosition().lat()},${busesvar[busvarcount[i]].getPosition().lng()}`);
-                console.log("time1", durationList[0][1]);
+
                 if(buses[i].description == "601" && last< ind){
-                    console.log("eligible", last, ind);
                     j=0;
                     while (time1<durationList[j][1] && j+1<durationList.length){
                         j=j+1;
                         ind =durationList[j][0];
                         time1 = await drive_toStation(`${busStations[ind].getPosition().lat()},${busStations[ind].getPosition().lng()}`, `${busesvar[busvarcount[i]].getPosition().lat()},${busesvar[busvarcount[i]].getPosition().lng()}`);
-                        console.log("time2", time1, durationList[j][1]);
                     }
                     if (time1>=durationList[j][1]){
                         busesdurs.push([busvarcount[i],ind, time1]);
@@ -662,7 +630,6 @@ async function drive_toStation(origin, destination) {
         }
         if (busesdurs.length!==0){
             busesdurs.sort((a, b) => a[2] - b[2]);
-            console.log("busesdurs0", busesdurs);
             return busesdurs;
         }
         else{
