@@ -116,7 +116,7 @@
                             <a id="1" href="#" data-value="38.27300585312582, 21.765157239518665">601 Πανεπιστήμιο - Νοσοκομείο</a>
                             <a id="2" href="#" data-value="38.27300585312582, 21.765157239518665">604 Πανεπιστήμιο - Νοσοκομείο - Ρίο</a>
                             <a id="3" href="#" data-value="38.27300585312582, 21.765157239518665">605 Πανεπιστήμιο - Νοσοκομείο - Άγ. Βασίλειος - Ρίο</a>
-                        </div><input id="timeinput" type="text" placeholder="Specify time-HH:MM (optional)">
+                        </div><input id="timeinput" type="text" placeholder="Specify time (optional)">
                     </div>
                     <button id="enterButton">Enter</button>
                     <div id="location_checkbox">
@@ -392,7 +392,7 @@
         });
         document.addEventListener('mousedown', function (event) {
             if (!event.target.closest('.dropdown')) {
-                dropdownContent.style.display = 'none'; // Hide dropdown when clicking outside
+                dropdownContent.style.display = 'none'; 
             }
         });
 
@@ -404,7 +404,6 @@
 
         enterButton.addEventListener('click', async function() {
             if (target!=null){
-                // Get selected option value
                 let time = timeinput.value.trim();
                 if (time==""){
                     time = null;
@@ -460,7 +459,6 @@
     }
         
 
-    // Function to handle input in the search box
     function handleSearchInput() {
         //const searchInput = document.getElementById('searchInput');
         const filter = searchInput.value.toLowerCase();
@@ -540,9 +538,6 @@ async function drive_toStation(origin, destination) {
     }
 }
 
-
-
-    // Function to update the map frame based on the clicked element
     function updateMapFrame(selectedLocation, zoom) {
         const [lat, lng] = selectedLocation.split(',').map(parseFloat);
         const newCenter = new google.maps.LatLng(lat, lng);
@@ -552,7 +547,6 @@ async function drive_toStation(origin, destination) {
         map.setZoom(zoom);
     }
 
-    // Function to get the user's location
     function getUserLocation() {
         if (document.getElementById("location").checked) {
             if (navigator.geolocation) {

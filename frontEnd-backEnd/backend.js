@@ -31,8 +31,8 @@ app.use(cors({
 }));
 
 async function readexcel(){
-  const startRow = 1; // Example: Start parsing from the 2nd row
-  const endRow = 123;   // Example: Parse until the 5th row
+  const startRow = 1; 
+  const endRow = 123;  
   const Cols = ['C','E','F','G','H','I','J','K'];
 
   const parsedData = [];
@@ -57,7 +57,6 @@ async function readexcel(){
       
   }
   console.log(parsedData);
-  //document.getElementById("content_space")
   return parsedData;
 }
 
@@ -71,14 +70,12 @@ app.get('/getalltheroutes', async (req, res) => {
   }
 });
 
-// Asynchronous function to read entity attribute
 const readEntityAttribute = async (entityId, attributeName) => {
   try {
     const response = await axios.get(`http://150.140.186.118:1026/v2/entities/${entityId}`);
     
     console.log('Full response:', response.data);
 
-    // Check if the attribute exists in the response
     if (response.data && response.data[attributeName]) {
       const attributeValue = response.data[attributeName].value;
       /* console.log(`Attribute ${attributeName} value:`, attributeValue); */
@@ -135,8 +132,6 @@ app.get('/getBusDirection', async (req, res) => {
   }
 });
 
-  // Initiate the entity before starting the server
-  /* await createEntities('39.556593793150746', '21.767370401805035', '38.24903100595789', '21.7393154225915'); */
 
 app.get('/getStationInfo', async (req, res) => {
     console.log('GET /getStationInfo called');
@@ -179,7 +174,6 @@ const updateStationData = async () => {
   const updateBusData = async () => {
     try {
         busData = await Promise.all(buses.map(async (bus) => {
-            //console.log("mnmnnmnmnmn");
             const cf = await readEntityAttribute(bus, 'crowdFlowObserved');
             const congested = await readEntityAttribute(cf.value, 'congested');
             const locationData = await readEntityAttribute(bus, 'location');
@@ -216,17 +210,13 @@ const updateStationData = async () => {
 
   const fData = async () => {
     try {
-        // Populate the stations array
         for (let i = 1; i < 33; i++) {
             stations.push("urn:ngsild:TransportStation:Station:" + String(i));
-            //console.log("uuueueueueue");
             console.log(await readEntityAttribute(stations[i - 1], 'crowdFlowObserved'));
         }
 
-        // Update station data
         await updateStationData();
 
-        // Update the /getStationInfo route with the updated station data
         app.get('/getStationInfo', async (req, res) => {
             console.log('GET /getStationInfo called');
             res.json(stationData);
@@ -251,8 +241,8 @@ const updateStationData = async () => {
 fData();
 console.log("kkkkkk",buses);
 
-  // Start the Express server
   const PORT = 3000;
   server.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}/`);
   });
+
