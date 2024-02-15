@@ -609,7 +609,7 @@ async function drive_toStation(origin, destination) {
             updateMapFrame(`${busStations[busesdurs[0][1]].getPosition().lat()}, ${busStations[busesdurs[0][1]].getPosition().lng()}`, 20);
             var contentString = '<div id="content">' +
                         /* '<h6 id="firstHeading" class="firstHeading">'+busStations[busesdurs[0][1]].title +'</h6>' + */
-                        '<p id ="info" style="border-radius: 5%; height: 2px; background-color: #95c56e; padding: 10px;"><h6 style=" font-size: 12px; ">'+info +'</h6></p>' +
+                        '<p id ="info" style="border-radius: 5%; height: 2px; background-color: #95c56e; padding: 10px;"><h6 style=" font-size: 10px; ">'+info +'</h6></p>' +
                         '</div>';
 
             infoWindow.setContent(contentString);
@@ -626,7 +626,7 @@ async function drive_toStation(origin, destination) {
         console.log("busesvar.length", busvarcount);
         for (var i = 0; i < busvarcount.length; i++) {
             console.log("congested",i,busvarcount[i],busesvar[busvarcount[i]].congested);
-            if (/* busesvar[busvarcount[i]].congested==false */true){
+            if ( busesvar[busvarcount[i]].congested==false ){
                 lastStation = await getBusDirection(busesvar[busvarcount[i]].crowdflowid);
 
                 let lastStation_location ;
