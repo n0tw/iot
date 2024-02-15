@@ -24,15 +24,17 @@
     background: linear-gradient(to bottom, #cccecc, #545e50);
 }
 header {
+    background-image: linear-gradient(to right, #cccecc00, #575c6076);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 7px;
+    padding: 3px;
     padding-bottom: 18px;
     width: 100%; /* Ensure the header spans the entire width */
 }
 
 #site-name {
+    color: #ffffff;
     font-size: 30px;
     font-weight: bold;
     margin-left: auto;
@@ -134,7 +136,7 @@ header {
     left: 0;
     width: 50%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.281);
     z-index: 9999;
     transform: translateX(-100%);
     transition: transform 0.5s ease; 
@@ -148,7 +150,7 @@ header {
 
 
 #historicalStationschart-container, #historicalStationschart-container1{
-    top: 15%;
+    top: 20%;
     padding-bottom: 15%;
     position: absolute;
     left: 42%; 
@@ -170,12 +172,17 @@ header {
     width: 100%;
     margin-top: 20px;
 }
-#dropdown, #menu input{
+#dropdown, #menu input, #hourdropdown, #endhourdropdown{
     background-color: #6b7266;
 }
 
-#dropdown1, #menu1 input{
+#dropdown1, #menu1 input, #hourdropdown1, #endhourdropdown1{
     background-color: #666a72;
+}
+#enterButton, #enterButton1{
+    background-color: rgb(211, 212, 203);
+    border-color: rgb(211, 212, 203);
+    border-radius: 10%;
 }
 
 #chart-background {
@@ -204,7 +211,12 @@ header {
 }
 
 .chart-title{
-    color: #cccecc;
+    margin-right: auto;
+    font-weight: bold;
+    color: #eaff00;
+}
+#chart1{
+    color: rgb(107, 223, 255);
 }
 
 #historicalStationschart {
@@ -231,18 +243,18 @@ header {
     </header>
     <div id="front-layer">    
         <div id="historicalStationschart-container">
-            <div class = "chart-title">Average people waiting in a station per hour chart</div>
+            <div class = "chart-title"id="chart">Hourly Average Waiting Population at Stations</div>
             <div id="menu">
                 <select id="dropdown">
                     <!-- Add more options as needed -->
                 </select>
                 <input type="text" id="date" placeholder="Starting date (D/M/YYYY)">
                 <select id="hourdropdown">
-                    <option value="-">Starting hour</option>
+                    <option value="-" id ="hour">Starting hour</option>
                 </select>
                 <input type="text" id="enddate" placeholder="Ending date (D/M/YYYY)">
                 <select id="endhourdropdown">
-                    <option value="-">Ending hour</option>
+                    <option value="-" id ="endhour">Ending hour</option>
                 </select>
                 <button id="enterButton">Enter</button>
             </div>
@@ -251,18 +263,18 @@ header {
             </div>
         </div>
         <div id="historicalStationschart-container1">
-            <div class = "chart-title">Average people collected per station chart</div>
+            <div class = "chart-title" id="chart1"> Average Daily Collection of People per Station</div>
             <div id="menu1">
                 <select id="dropdown1">
                     <!-- Add more options as needed -->
                 </select>
                 <input type="text" id="date1" placeholder="Starting date (D/M/YYYY)">
                 <select id="hourdropdown1">
-                    <option value="-">Starting hour</option>
+                    <option value="-" id ="hour1">Starting hour</option>
                 </select>
                 <input type="text" id="enddate1" placeholder="Ending date (D/M/YYYY)">
                 <select id="endhourdropdown1">
-                    <option value="-">Ending hour</option>
+                    <option value="-" id ="endhour1">Ending hour</option>
                 </select>
                 <button id="enterButton1">Enter</button>
             </div>
@@ -660,14 +672,9 @@ header {
             document.addEventListener("mousemove", function(event) {
                 const mouseX = event.clientX;
                 const screenWidth = window.innerWidth;
-
-                // Define a threshold for the mouseX position near the left side
                 const threshold = 60;
-
-                // Calculate the distance from the left edge
                 const distanceToLeft = mouseX;
 
-                // Adjust the width of the front layer based on mouse position
                 let layerTransform;
                 let layerTransform1;
                 if (distanceToLeft < threshold) {
@@ -684,7 +691,45 @@ header {
 
                 frontLayer.style.transform = layerTransform;
             });
-            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            const chartCanvas = document.getElementById("historicalStationsChart");
+            let isDragging = false;
+            let copiedChart = null;
+            let offsetX, offsetY;
+
+            document.addEventListener('mousedown', function(event) {
+                if (event.target === chartCanvas) {
+                    isDragging = true;
+                    offsetX = event.clientX - chartCanvas.getBoundingClientRect().left;
+                    offsetY = event.clientY - chartCanvas.getBoundingClientRect().top;
+
+                    copiedChart = chartCanvas.cloneNode(true);
+                    copiedChart.id = "copiedHistoricalStationsChart";
+                    copiedChart.style.position = "fixed";
+                    copiedChart.style.zIndex = "10001";
+                    copiedChart.style.left = event.clientX - offsetX + 'px';
+                    copiedChart.style.top = event.clientY - offsetY + 'px';
+                    document.body.appendChild(copiedChart);
+                }
+            });
+
+            document.addEventListener('mousemove', function(event) {
+                if (isDragging && copiedChart) {
+                    const x = event.clientX - offsetX;
+                    const y = event.clientY - offsetY;
+                    copiedChart.style.left = x + 'px';
+                    copiedChart.style.top = y + 'px';
+                }
+            });
+
+            document.addEventListener('mouseup', function() {
+                isDragging = false;
+                if (copiedChart) {
+                    copiedChart.remove();
+                    copiedChart = null;
+                }
+            });
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////            
         });
         
         //console.log("data", stations);
