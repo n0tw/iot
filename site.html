@@ -29,7 +29,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(to bottom, #cfd3cfe2, #545e50df);
+        background: linear-gradient(to bottom, #cfd3cf, #545e50);
         z-index: -1;
     }
     #map{
@@ -609,7 +609,7 @@ async function drive_toStation(origin, destination) {
             updateMapFrame(`${busStations[busesdurs[0][1]].getPosition().lat()}, ${busStations[busesdurs[0][1]].getPosition().lng()}`, 20);
             var contentString = '<div id="content">' +
                         /* '<h6 id="firstHeading" class="firstHeading">'+busStations[busesdurs[0][1]].title +'</h6>' + */
-                        '<p id ="info" style="border-radius: 5%; font-size: 12px; background-color: #95c56e; padding: 10px;"><h6>'+info +'</h6></p>' +
+                        '<p id ="info" style="border-radius: 5%; height: 2px; background-color: #95c56e; padding: 10px;"><h6 style=" font-size: 12px; ">'+info +'</h6></p>' +
                         '</div>';
 
             infoWindow.setContent(contentString);
