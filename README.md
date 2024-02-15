@@ -35,3 +35,14 @@ npm install express cors axios body-parser node-fetch@2.6.1 nodemailer xlsx sock
 run_commands.dat
 ```
 
+# *Local ports used:*
+| File | Port |
+| --------------- | --------------- |
+| backend.js   | 3000    |
+| busai.py    | 5000    |
+| busStopFaker.py    | 5001    |
+| edgeController.py   | 5002    |
+| mainApp.py   | 5003    |
+| edgeControllerSyncSupport.py   | 5004    |
+| notifyDriver.py   | 5005    |
+| bckend22.js   | 8080    |
