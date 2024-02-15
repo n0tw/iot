@@ -13,230 +13,230 @@
 
     <style>
         body {
-    font-family: "Sarabun", sans-serif;
-    margin-left: 20px;
-    margin-right: 20px;
-    margin-top: 50px;
-    margin-bottom: 50px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: linear-gradient(to bottom, #cccecc, #545e50);
-}
-header {
-    background-image: linear-gradient(to right, #cccecc00, #575c6076);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 3px;
-    padding-bottom: 18px;
-    width: 100%; /* Ensure the header spans the entire width */
-}
+            font-family: "Sarabun", sans-serif;
+            margin-left: 20px;
+            margin-right: 20px;
+            margin-top: 50px;
+            margin-bottom: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(to bottom, #cccecc, #545e50);
+        }
+        header {
+            background-image: linear-gradient(to right, #cccecc00, #575c6076);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 3px;
+            padding-bottom: 18px;
+            width: 100%; 
+        }
 
-#site-name {
-    color: #ffffff;
-    font-size: 30px;
-    font-weight: bold;
-    margin-left: auto;
-    margin-right: 10%;
-}
-#firstHeading {
-    font-size: 15px;
-    margin: 0%;
-}
-#map-table-container {
-    display: flex;
-    width: 80%;
-    justify-content: space-between;
-    margin-top: 30px;
-    margin-bottom: 70px;
-    align-items: flex-start;
-}
+        #site-name {
+            color: #ffffff;
+            font-size: 30px;
+            font-weight: bold;
+            margin-left: auto;
+            margin-right: 10%;
+        }
+        #firstHeading {
+            font-size: 15px;
+            margin: 0%;
+        }
+        #map-table-container {
+            display: flex;
+            width: 80%;
+            justify-content: space-between;
+            margin-top: 30px;
+            margin-bottom: 70px;
+            align-items: flex-start;
+        }
 
-.map-container {
-    flex: 1; 
-    max-width: 75%; 
-    height: 400px;
-    margin-right: 5px;
-}
+        .map-container {
+            flex: 1; 
+            max-width: 75%; 
+            height: 400px;
+            margin-right: 5px;
+        }
 
-#data-table-container {
-    flex: 1; 
-    max-width: 25%; 
-    margin-left: 5px; 
-}
+        #data-table-container {
+            flex: 1; 
+            max-width: 25%; 
+            margin-left: 5px; 
+        }
 
-#chart-container {
-    position: relative;
-    display: flex;
-    width: 70%;
-    margin: 0 auto; 
-    height: 400px; 
-    margin-bottom: 70px;
-    align-items: flex-start;
-}
-#mychart {
-    width: 100%;
-    height: 100%;
-}
+        #chart-container {
+            position: relative;
+            display: flex;
+            width: 70%;
+            margin: 0 auto; 
+            height: 400px; 
+            margin-bottom: 70px;
+            align-items: flex-start;
+        }
+        #mychart {
+            width: 100%;
+            height: 100%;
+        }
 
-#data-table {
-    border-collapse: collapse;
-    width: 100%;
-    position: relative;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
+        #data-table {
+            border-collapse: collapse;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
 
-#data-table th, #data-table td {
-    border: 1px solid #ffea00e0;
-    padding: 8px;
-    text-align: left;
-}
+        #data-table th, #data-table td {
+            border: 1px solid #ffea00e0;
+            padding: 8px;
+            text-align: left;
+        }
 
-#data-table td {
-    color: 1px solid #101010;
-    padding: 8px;
-    text-align: left;
-    border: #9d9d9d;
-    font-size: small;
-}
+        #data-table td {
+            color: 1px solid #101010;
+            padding: 8px;
+            text-align: left;
+            border: #9d9d9d;
+            font-size: small;
+        }
 
-#data-table th {
-    background-color: #c3b525e0;
-    color : #373a3f;
-}
+        #data-table th {
+            background-color: #c3b525e0;
+            color : #373a3f;
+        }
 
-#warnings-title {
-    color: #4b460ce0;
-    text-align: center;
-    margin-bottom: 10px;
-}
+        #warnings-title {
+            color: #4b460ce0;
+            text-align: center;
+            margin-bottom: 10px;
+        }
 
-.custom-infoWindow {
-    background-color: white;
-    border-radius: 5px;
-    padding: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
+        .custom-infoWindow {
+            background-color: white;
+            border-radius: 5px;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
 
-.custom-infoWindow h3 {
-    margin: 0;
-    font-size: 16px;
-}
+        .custom-infoWindow h3 {
+            margin: 0;
+            font-size: 16px;
+        }
 
-.custom-infoWindow p {
-    margin: 5px 0;
-    font-size: 14px;
-}
+        .custom-infoWindow p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
 
-#table-body {
-    font-family: 'Hedvig Letters Sans', sans-serif;
-    
-}
+        #table-body {
+            font-family: 'Hedvig Letters Sans', sans-serif;
+            
+        }
 
-#front-layer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 50%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.281);
-    z-index: 9999;
-    transform: translateX(-100%);
-    transition: transform 0.5s ease; 
-    display: flex; 
-    overflow-y: auto;
-}
+        #front-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.281);
+            z-index: 9999;
+            transform: translateX(-100%);
+            transition: transform 0.5s ease; 
+            display: flex; 
+            overflow-y: auto;
+        }
 
-#front-layer::-webkit-scrollbar {
-    display: none;
-}
+        #front-layer::-webkit-scrollbar {
+            display: none;
+        }
 
 
-#historicalStationschart-container, #historicalStationschart-container1{
-    top: 20%;
-    padding-bottom: 15%;
-    position: absolute;
-    left: 42%; 
-    width: 80%; 
-    height: 60%; 
-    /*background-color: rgba(255, 255, 255, 1);   */
-    transform: translateX(-40%); 
-    display: flex;
-    flex-direction: column;
-    justify-content: center; 
-    align-items: center; 
-}
+        #historicalStationschart-container, #historicalStationschart-container1{
+            top: 20%;
+            padding-bottom: 15%;
+            position: absolute;
+            left: 42%; 
+            width: 80%; 
+            height: 60%; 
+            /*background-color: rgba(255, 255, 255, 1);   */
+            transform: translateX(-40%); 
+            display: flex;
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center; 
+        }
 
-#historicalStationschart-container1{
-    top: 80%;
-}
-#menu, #menu1 {
-    position: relative;
-    width: 100%;
-    margin-top: 20px;
-}
-#dropdown, #menu input, #hourdropdown, #endhourdropdown{
-    background-color: #6b7266;
-}
+        #historicalStationschart-container1{
+            top: 80%;
+        }
+        #menu, #menu1 {
+            position: relative;
+            width: 100%;
+            margin-top: 20px;
+        }
+        #dropdown, #menu input, #hourdropdown, #endhourdropdown{
+            background-color: #6b7266;
+        }
 
-#dropdown1, #menu1 input, #hourdropdown1, #endhourdropdown1{
-    background-color: #666a72;
-}
-#enterButton, #enterButton1{
-    background-color: rgb(211, 212, 203);
-    border-color: rgb(211, 212, 203);
-    border-radius: 10%;
-}
+        #dropdown1, #menu1 input, #hourdropdown1, #endhourdropdown1{
+            background-color: #666a72;
+        }
+        #enterButton, #enterButton1{
+            background-color: rgb(211, 212, 203);
+            border-color: rgb(211, 212, 203);
+            border-radius: 10%;
+        }
 
-#chart-background {
-    /* background-color: rgb(0, 98, 255); */
-    background-color: #ffee00;
-    position: relative;
-    margin: auto;
-    margin-top: 20px;
-    height: 40vh;
-    width: 90%;
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-}
+        #chart-background {
+            /* background-color: rgb(0, 98, 255); */
+            background-color: #ffee00;
+            position: relative;
+            margin: auto;
+            margin-top: 20px;
+            height: 40vh;
+            width: 90%;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
 
-#chart-background1 {
-    background-color: rgb(0, 149, 255);
-    position: relative;
-    margin: auto;
-    margin-top: 20px;
-    height: 40vh;
-    width: 90%;
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-}
+        #chart-background1 {
+            background-color: rgb(0, 149, 255);
+            position: relative;
+            margin: auto;
+            margin-top: 20px;
+            height: 40vh;
+            width: 90%;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
 
-.chart-title{
-    margin-right: auto;
-    font-weight: bold;
-    color: #eaff00;
-}
-#chart1{
-    color: rgb(107, 223, 255);
-}
+        .chart-title{
+            margin-right: auto;
+            font-weight: bold;
+            color: #eaff00;
+        }
+        #chart1{
+            color: rgb(107, 223, 255);
+        }
 
-#historicalStationschart {
-    width: 100%; 
-    height: 100%;
-}
+        #historicalStationschart {
+            width: 100%; 
+            height: 100%;
+        }
 
-::placeholder{
-    color: rgb(143, 148, 140);
-    /* background-color:  rgba(46, 50, 46, 0.777); */
+        ::placeholder{
+            color: rgb(143, 148, 140);
+            /* background-color:  rgba(46, 50, 46, 0.777); */
 
-}
+        }
 
-::-ms-input-placeholder { /* Edge 12-18 */
-    color: rgb(143, 148, 140);
-}
+        ::-ms-input-placeholder { /* Edge 12-18 */
+            color: rgb(143, 148, 140);
+        }
 
         
     </style>
@@ -394,10 +394,8 @@ header {
         }
 
         function onMessageArrived(message) {
-            //console.log(`Received message on topic ${message.destinationName}: ${message.payloadString}`);
             const payload = JSON.parse(message.payloadString);
-            const type= payload.type
-            console.log(type);
+            const type= payload.type;
             if(type=="TransportStation"){
                 updateStationData(message.destinationName, payload);
             }else if (type=="CrowdFlowObserved"){
@@ -423,7 +421,6 @@ header {
 
             for (var i = 0; i < stations.length; i++) {
                 const location = stations[i].location.value;
-                console.log("typeof(stations), typeof(stations[1])",typeof(stations), typeof(stations[1]))
                 busStations[i] = new google.maps.Marker({
                     id: stations[i].id,
                     position: { lat:location.coordinates[0], lng:location.coordinates[1] },
@@ -436,7 +433,6 @@ header {
                 });
                 busStations[i].addListener('click', (function (i, stationId) {
                     return function () {
-                        console.log("stationId", stationId);
                         getStationLastUpdate(i,stationId);
                         var contentString = '<div id="content">' +
                             '<h6 id="firstHeading" class="firstHeading">'+busStations[i].title+'</h6>' +
@@ -454,7 +450,6 @@ header {
 
         function addBusMarkers(i,bus) {
             var markerSize = new google.maps.Size(42, 42);
-            console.log(bus);
             const location = bus.location.value;
             const lat = parseFloat(location.coordinates.split(',')[0]);
             const lng = parseFloat(location.coordinates.split(',')[1]);
@@ -470,11 +465,9 @@ header {
                     scaledSize: markerSize
                 }
             });
-            console.log(`busesvar[${i}].position`, busesvar[i].position);
 
             busesvar[i].addListener('click', (function (i, busId) {
                 return function () {
-                    console.log("busId", busId);
                     getbusLastUpdate(busId);
                     var contentString = '<div class="infoWindow" id="content">' +
                         '<h6 id="firstHeading" class="firstHeading">Bus'+String(i+1)+'</h6>' +
@@ -503,8 +496,6 @@ header {
                 
                 //document.getElementById("info").innerText = `Last bus seen: ${data.lastbus.value}. At: ${data.dateTime.value}\n The next bus is going to arrive in ${time}`;
             } catch (error) {
-                console.log(await findBusandTime([[i, 0]]));
-                //console.log(data.dateTime);
                 console.error('Error fetching location:', error.message);
             }
         }
@@ -517,7 +508,6 @@ header {
                 if (data.status === "OK") {
                     data.routes.forEach((route, index) => {
                         times.push(data.routes[0].legs[0].duration.value);
-                        console.log("drive time",data.routes[0].legs[0].duration.value);
                     })
                 return Math.min(...times);
             } else {
@@ -531,9 +521,7 @@ header {
         }
         async function findBusandTime(durationList){
             const busesdurs = [];
-            console.log("busesvar.length", busvarcount);
             for (var i = 0; i < busvarcount.length; i++) {
-                console.log("congested",i,busesvar[busvarcount[i]].congested);
                 if (busesvar[busvarcount[i]].congested==false){
                     lastStation = await getBusDirection(busesvar[busvarcount[i]].crowdflowid);
 
@@ -547,11 +535,9 @@ header {
                         last=last+1;
                     }
 
-                    console.log(busesvar[busvarcount[i]].title, lastStation);
                     ind =durationList[0][0];
                     time1 = await drive_toStation(`${busStations[ind].getPosition().lat()},${busStations[ind].getPosition().lng()}`, `${busesvar[busvarcount[i]].getPosition().lat()},${busesvar[busvarcount[i]].getPosition().lng()}`);
                     if(buses[i].description == "601" && last< ind){
-                        console.log("eligible", last, ind);
                         j=0;
                         while (time1<durationList[j][1] && j+1<durationList.length){
                             j=j+1;
@@ -568,7 +554,6 @@ header {
             }
             if (busesdurs.length!==0){
                 busesdurs.sort((a, b) => a[2] - b[2]);
-                console.log("busesdurs0", busesdurs);
                 return busesdurs;
             }
             else{
@@ -589,7 +574,6 @@ header {
             fetch('http://127.0.0.1:8080/getStationInfo')
                 .then(response => response.json())
                 .then(data => {
-                    //initMap(); 
                     stations = data;
                     client.connect({
                         onSuccess: onConnect,
@@ -597,7 +581,6 @@ header {
                         useSSL: false,
                     });
                     initMap(); 
-                    //console.log(data);
                     
                     
                 })
@@ -631,10 +614,6 @@ header {
                 const hour = hourdropdown.value;
                 const endhour = endhourdropdown.value;
                 
-                console.log('id:', selectedOption);
-                console.log('Year:', dt);
-                console.log('hour:', hour);
-                
                 // Clear input fields
                 date.value = '';
                 enddate.value = '';
@@ -644,8 +623,6 @@ header {
                 }
                 
                 chart = await createChart(selectedOption, dt, endd, hour, endhour);
-                console.log('chart', chart);
-
             });
             
             enterButton1.addEventListener('click', async function() {
@@ -655,10 +632,6 @@ header {
                 const hour = hourdropdown1.value;
                 const endhour = endhourdropdown1.value;
 
-                console.log('id:', selectedOption);
-                console.log('Year:', dt1);
-                console.log('hour:', hour);
-
                 date1.value = ''; 
                 enddate1.value = '';
 
@@ -667,7 +640,6 @@ header {
                 }
 
                 chart1 = await createChartBuses(selectedOption, dt1, endd, hour, endhour);
-                console.log('chart', chart1);
             });
             
 
@@ -735,7 +707,6 @@ header {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////            
         });
         
-        //console.log("data", stations);
         
         var map;
         var bus1;
@@ -791,11 +762,9 @@ header {
 
         function updateCrowdData(topic, payload){
             
-            console.log("peopleCount congested",payload.peopleCount.value, payload.congested.value);
             peopleCount = payload.peopleCount.value;
             congested = payload.congested.value;
             name = payload.alternateName.value;
-            console.log("KKKKKKKK",name.slice(0, 3));
             if (name.slice(0, 3) !=="Bus"){
                 console.log("Station crowdflow");
                 existingIndex = stationDataMap.findIndex(entry => entry.name === name);
@@ -823,7 +792,6 @@ header {
                 myChart.update();
                 
             }else{
-                console.log("Bussssssss");
                 id = payload.id;
                 busesIndex = buses.findIndex(entry => entry.crowdflowid === id);
                 busesvarIndex =-1;
@@ -836,15 +804,11 @@ header {
                 
             }
             if (name.slice(0, 3) !=="Bus" ||(name.slice(0, 3) =="Bus" && busesvarIndex!==-1) ){
-                console.log("____!____");
                 tableBody = document.getElementById('table-body');
                 existingIndex = Array.from(tableBody.rows).findIndex(entry =>
                     entry.cells[0].textContent === name && entry.cells[1].textContent === "congested"
                 );
-                console.log("congested", congested);
                 if(congested==true && existingIndex === -1){
-
-                    console.log("congested");
                     const newRow = tableBody.insertRow(0);
                     const cell1 = newRow.insertCell(0);
                     const cell2 = newRow.insertCell(1);
@@ -856,9 +820,6 @@ header {
                             scaledSize: new google.maps.Size(38, 17)
                         });
                     }
-                    /* if (tableBody.rows.length==10){
-                        tableBody.deleteRow(-1);
-                    } */
                 }
                 if (congested==false && existingIndex !== -1){
                     tableBody.deleteRow(existingIndex);
@@ -879,17 +840,12 @@ header {
                 entry.cells[0].textContent === stationName && entry.cells[1].textContent === "Illegal parking"
             );
 
-            if(payload.trafficViolation.value!=="_" && existingIndex === -1){    
-                console.log("payload.trafficViolation",payload.trafficViolation);
+            if(payload.trafficViolation.value!=="_" && existingIndex === -1){
                 const newRow = tableBody.insertRow(0);
                 const cell1 = newRow.insertCell(0);
                 const cell2 = newRow.insertCell(1);
                 cell1.textContent = stationName;
-                //console.log("data[i].illparking",illparking);
                 cell2.textContent = "Illegal parking";
-                /* if (tableBody.rows.length==10){
-                    tableBody.deleteRow(-1);
-                } */
             }
             if (payload.trafficViolation.value == "_" && existingIndex !== -1){
                 tableBody.deleteRow(existingIndex);
@@ -909,18 +865,11 @@ header {
             }
             if (busesvarIndex==-1){
                 addBusMarkers(i,buses[busesIndex]);
-                console.log("busesvar.length",busvarcount);
             }
-
-            console.log("hhhhhhh ", busesIndex);
-
             loc = payload.location.value;
             const lat = parseFloat((loc.coordinates).split(',')[0]);
             const lng = parseFloat((loc.coordinates).split(',')[1]);
-            console.log(lat, lng, typeof(lat), loc, typeof(loc));
             (busesvar[busesIndex]).setPosition(new google.maps.LatLng(lat, lng)); 
-            //console.log(busesvar[Number(n-1)].position.lat, busesvar[Number(n-1)].position.lng);
-            //map.setCenter(new google.maps.LatLng(lat, lng));
         }
 
 
@@ -932,20 +881,8 @@ header {
         try {
             const inputs1 = d.split('/');
             const inputs2 = endd.split('/');
-            
-            console.log('id:', Option);
-            console.log('Year:', inputs1[2]);
-            console.log('Month:', inputs1[1]);
-            console.log('Day:', inputs1[0]);
-            console.log('endhour:', hour);
-            console.log('endYear:', inputs2[2]);
-            console.log('endMonth:', inputs2[1]);
-            console.log('endDay:', inputs2[0]);
-            console.log('endhour:', endhour);
-
 
             const url = new URL(`http://localhost:8080/${endpoint}`);
-            console.log("url", url);
             url.searchParams.append('id', Option);
             url.searchParams.append('initYear', inputs1[2]);
             url.searchParams.append('initMonth', inputs1[1]);
@@ -955,12 +892,9 @@ header {
             url.searchParams.append('endMonth', inputs2[1]);
             url.searchParams.append('endDay', inputs2[0]);
             url.searchParams.append('endHour', endhour);
-            console.log("url", url); 
+            
             const response = await fetch(url);
             const data = await response.json();
-            
-            // Log the fetched data
-            console.log('Fetched Data:', data);
 
             return data;
              } catch (error) {
