@@ -21,7 +21,12 @@ let congestions = [];
 
 app.use(bodyParser.json());
 app.use(cors({
-    origin: '*',
+    origin: 'http://127.0.0.1:8080',
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+app.use(cors({
+    origin: 'http://127.0.0.1:8000',
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
@@ -115,7 +120,6 @@ const readEntityAttribute = async (entityId, attributeName) => {
       
       //console.log('Full response:', response.data[attributeName]);
   
-      // Check if the attribute exists in the response
       if (response.data && response.data[attributeName]) {
         const attributeValue = response.data[attributeName].value;
         /* console.log(`Attribute ${attributeName} value:`, attributeValue); */
@@ -132,7 +136,6 @@ const readEntityAttribute = async (entityId, attributeName) => {
 const monitorAttribute = async (stationids) => {
     let text='';
     try {
-        // Use Promise.all to wait for all attribute fetching operations
         console.log("opopop");
         
         //console.log(readEntityAttribute(await readEntityAttribute(stationids[0], 'trafficViolation')));
@@ -150,9 +153,6 @@ const monitorAttribute = async (stationids) => {
 
                 console.error(`Error fetching attributes for station ${id}:`, attributeError);
                 
-                
-                console.log("nnnnnjnjn");
-                // Handle or log the error as needed
             }
         }));
         
@@ -180,7 +180,7 @@ const monitorAttribute = async (stationids) => {
 
 app.post('/notification-endpoint', async (req, res) => {
     console.log('Received notification:', req.body);
-    const subscriptionData = req.body; // Data for context broker subscription
+    const subscriptionData = req.body; 
     const contextBrokerUrl = 'http://150.140.186.118:1026/v2/subscriptions';
 
     try {
@@ -194,14 +194,12 @@ app.post('/notification-endpoint', async (req, res) => {
 
         const responseData = await response.text();
 
-        // Check if the response body is empty or not JSON
         if (!responseData || !response.headers.get('content-type')?.includes('application/json')) {
             console.log('Unexpected or empty response:', responseData);
             res.status(500).json({ error: 'Unexpected or empty response from Orion Context Broker' });
             return;
         }
 
-        // Parse the JSON response
         const jsonResponse = JSON.parse(responseData);
         res.json(jsonResponse);
     } catch (error) {
@@ -220,8 +218,6 @@ const updateStationData = async () => {
         stationData = await Promise.all(stations.map(async (station) => {
             //const illparkingid = await readEntityAttribute(station, 'trafficViolation') || '_';
             const illparkingid = await readEntityAttribute(station, 'trafficViolation') || '_';
-            //console.log("UpdateSttn", station);
-            //console.log("qqqq______________")
             return {
                 id: station,
                 crowdflowid: await readEntityAttribute(station, 'crowdFlowObserved'),
@@ -237,9 +233,7 @@ const updateStationData = async () => {
         violations = violations.filter(e => !removeStations.map(station => station.id).includes(e));
         
         console.log("pppppp");
-        //console.log(filteredStations[0].illparkingid);
         filteredStations.forEach(station => {
-            //console.log("llpar_king",station.illparkingid);
             violations.push(station.id);
         });
         monitorAttribute(violations);
@@ -253,7 +247,6 @@ const updateStationData = async () => {
 const updateBusData = async () => {
     try {
         busData = await Promise.all(buses.map(async (bus) => {
-            //console.log("mnmnnmnmnmn");
             const congestedid = await readEntityAttribute(bus, 'crowdFlowObserved');
             const locationData = await readEntityAttribute(bus, 'location');
             if (!locationData) {
@@ -290,17 +283,13 @@ const updateBusData = async () => {
 
 const fData = async () => {
     try {
-        // Populate the stations array
         for (let i = 1; i < 33; i++) {
             stations.push("urn:ngsild:TransportStation:Station:" + String(i));
-            //console.log("uuueueueueue");
             console.log(await readEntityAttribute(stations[i - 1], 'crowdFlowObserved'));
         }
 
-        // Update station data
         await updateStationData();
 
-        // Update the /getStationInfo route with the updated station data
         app.get('/getStationInfo', async (req, res) => {
             console.log('GET /getStationInfo called');
             res.json(stationData);
@@ -341,15 +330,13 @@ const readDataByTime = async(req, res, entityId, initYear, initMonth, initDay, i
     endYear, endMonth, endDay, endHour, endMinute, endSecond, tz_offset) => {
     console.log(`http://localhost:5003/entities_by_time/${entityId}/${Number(initYear)}/${Number(initMonth)}/${Number(initDay)}/${Number(initHour)}/${initMinute}/${initSecond}/${Number(endYear)}/${Number(endMonth)}/${Number(endDay)}/${Number(endHour)}/${endMinute}/${endSecond}/${tz_offset}`, typeof(entityId), typeof(endYear), typeof(initMinute));
     try {
-        // Make an HTTP request to your Flask API endpoint
         const response = await axios.get(`http://localhost:5003/entities_by_time/${entityId}/${initYear}/${initMonth}/${initDay}/${initHour}/${initMinute}/${initSecond}/${endYear}/${endMonth}/${endDay}/${endHour}/${endMinute}/${endSecond}/${tz_offset}`);
-        // Retrieve data from the Flask API response
+
         const responseData = response.data;
     
         console.log('Type of responseData:', typeof responseData);
         console.log('Content of responseData:', responseData);
     
-        // Extract the 'data' array from responseData
         const data = responseData.data;
     
         console.log('Type of data:', typeof data);
@@ -357,11 +344,9 @@ const readDataByTime = async(req, res, entityId, initYear, initMonth, initDay, i
     
         const allEntries = Object.entries(data)
     
-        // Extract datetime and peopleCount values
         const xValues = allEntries.map(([label, value]) => label);
         const yValues = allEntries.map(([label, value]) => value);
     
-        // Send the data as JSON
         res.json({ xValues, yValues });
     } catch (error) {
         console.error('Error fetching data from MongoDB:', error);
@@ -372,12 +357,10 @@ const readDataByTime = async(req, res, entityId, initYear, initMonth, initDay, i
 const readDataAvgPeopleByTime = async(req, res, entityId, initYear, initMonth, initDay, initHour, initMinute, initSecond,
     endYear, endMonth, endDay, endHour, endMinute, endSecond, tz_offset) => {
     try {
-      // Make an HTTP request to your Flask API endpoint
       const response2 = await axios.get(`http://localhost:5003/avg_people_by_time/${entityId}/${initYear}/${initMonth}/${initDay}/${initHour}/${initMinute}/${initSecond}/${endYear}/${endMonth}/${endDay}/${endHour}/${endMinute}/${endSecond}/${tz_offset}`);
-      // Retrieve data from the Flask API response
+
       const responseData2 = response2.data;
   
-      // Extract the 'data' array from responseData
       const data2 = responseData2.data;
   
       console.log('Type of data2:', typeof data2);
@@ -392,7 +375,6 @@ const readDataAvgPeopleByTime = async(req, res, entityId, initYear, initMonth, i
       console.log('Type of yValues2:', typeof yValues2);
       console.log('Content of yValues2:', yValues2);
   
-      // Send the data as JSON
       res.json({ xValues2, yValues2 });
     } catch (error) {
       console.error('Error fetching data from MongoDB:', error);
@@ -401,7 +383,6 @@ const readDataAvgPeopleByTime = async(req, res, entityId, initYear, initMonth, i
 };
       
   
-// Read entity attribute
 app.get('/getDataByTime', async (req, res) => {
     try {
         const reqData = req.query;

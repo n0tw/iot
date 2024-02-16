@@ -11,7 +11,7 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 10px;
-    background-color: rgba(255, 255, 255, 0.9); /* Adjust the last value for header background opacity */
+    background-color: rgba(255, 255, 255, 0.9); 
 }
 
 .site-name {

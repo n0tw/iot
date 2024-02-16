@@ -269,7 +269,6 @@
             <div class = "chart-title" id="chart1"> Average Daily Collection of People per Station</div>
             <div id="menu1">
                 <select id="dropdown1">
-                    <!-- Add more options as needed -->
                 </select>
                 <input type="text" id="date1" placeholder="Starting date (D/M/YYYY)">
                 <select id="hourdropdown1">
@@ -474,7 +473,6 @@
                         '<p id ="info"></p>' +
                         '</div>';
 
-                    // Set the content and open the info window
                     infoWindow.setContent(contentString);
                     infoWindow.open(map, busesvar[i]);
                 };
@@ -724,15 +722,15 @@
             
         const ctx = document.getElementById('myChart').getContext('2d');
         const myChart = new Chart(ctx, {
-            type: 'bar', // Change the chart type to 'bar'
+            type: 'bar', 
             data: {
                 labels: [],
                 datasets: [{
                     label: 'People Count in station',
                     data: [],
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)', // Bar color with alpha (transparency)
-                    borderColor: 'rgba(75, 192, 192, 1)', // Border color
-                    borderWidth: 1, // Border width
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)', 
+                    borderWidth: 1, 
                 }]
             },
             options: {
