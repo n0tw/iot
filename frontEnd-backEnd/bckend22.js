@@ -21,12 +21,7 @@ let congestions = [];
 
 app.use(bodyParser.json());
 app.use(cors({
-    origin: 'http://127.0.0.1:8080',
-    credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization'],
-}));
-app.use(cors({
-    origin: 'http://127.0.0.1:8000',
+    origin: '*',
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
