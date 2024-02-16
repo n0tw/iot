@@ -21,7 +21,7 @@ while i <4:
     ids.append(['urn:ngsild:CrowdFlowObserved:Bus:'+str(i), 'urn:ngsild:Vehicle:Bus:'+str(i)])
     run_busai(busai_script, ids[-1])
     i+=1
-    time.sleep(1000)
+    time.sleep(200)
 
 
 

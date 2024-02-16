@@ -1,37 +1,28 @@
 import datetime
-import os
-import asyncio
-import threading
-import random
-import cv2
-import requests
-import numpy as np
-import pandas as pd
-from flask import Flask, request
-import aiohttp
-from ultralytics import YOLO
-import detectron2
-import supervision as sv
 import torch
-import ultralytics
-import sys
-
 TORCH_VERSION = ".".join(torch.__version__.split(".")[:2])
 CUDA_VERSION = torch.__version__.split("+")[-1]
-print("torch:", TORCH_VERSION, "; cuda:", CUDA_VERSION)
+print("torch: ", TORCH_VERSION, "; cuda: ", CUDA_VERSION)
 
+import os
 HOME = os.getcwd()
 print(HOME)
 
-# Install YOLOv5
+"""## Install YOLOv5"""
+
 from IPython import display
 display.clear_output()
 
+import ultralytics
 ultralytics.checks()
+
+import detectron2
 print("detectron2:", detectron2.__version__)
+
+import supervision as sv
 print("supervision", sv.__version__)
 
-# Download data
+"""## Download data"""
 # Current folder
 current_script_directory = os.path.dirname(os.path.realpath(__file__))
 
@@ -46,13 +37,20 @@ subfile = os.path.join(file_in_parent_folder, 'bus-raspberry')
 SUBWAY_VIDEO_PATH = os.path.join(subfile, 'iot_bus.mp4')
 YOLO_PATH = os.path.join(file_in_parent_folder, 'yolov8s.pt')
 
+from ultralytics import YOLO
 model = YOLO(YOLO_PATH)
 
-async def async_http_request(url, data):
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, json=data) as response:
-            response.raise_for_status()
-            return await response.json()
+import asyncio
+import numpy as np
+import supervision as sv
+import cv2
+import requests
+import pandas as pd
+import threading
+import time
+import random
+import sys
+from flask import Flask, request
 
 ids = sys.argv[1:]
 
@@ -63,7 +61,7 @@ else:
     print("No ids provided.")
 
 crowdflowid = ids[0]
-vehicleid = ids[1]
+vehicleid= ids[1]
 
 Favierou_vid = 0
 video_ended_event = threading.Event()
@@ -74,6 +72,7 @@ app = Flask(__name__)
 def handle_request():
     global Favierou_vid
     data = request.get_json()
+    # Use request.args to get query parameters from the URL
     favierou_vid_param = data['favierou_vid']
 
     if favierou_vid_param is not None:
@@ -87,6 +86,7 @@ def handle_request():
             video_ended_event.set()
         return 'Request handled successfully'
     else:
+        # Handle the case where 'favierou_vid' parameter is not provided
         return 'Missing "favierou_vid" parameter', 400
 
 class StoppableThread(threading.Thread):
@@ -102,7 +102,6 @@ class StoppableThread(threading.Thread):
 
 video_info = sv.VideoInfo.from_video_path(SUBWAY_VIDEO_PATH)
 print("video_info", video_info)
-
 # initiate polygon zone
 polygon = np.array([
     [0, 1920],
@@ -115,43 +114,50 @@ zone = sv.PolygonZone(polygon=polygon, frame_resolution_wh=video_info.resolution
 # initiate annotators
 box_annotator = sv.BoxAnnotator(thickness=4, text_thickness=4, text_scale=2)
 zone_annotator = sv.PolygonZoneAnnotator(zone=zone, color=sv.Color.white(), thickness=6, text_thickness=6, text_scale=4)
-max_people = 0
-processing_video = False
+max=0
 
-async def send_data_async(locations):
-    edge_controller_url = 'http://localhost:5002/receive_bus_data'
-    data = {"locations": locations[0]['Location'], "vehicleid": vehicleid, "crowdflowid": crowdflowid, "busnumber": "601"}
+z_1 = [False]
+m=0
+max_people = 0
+processing_video = False 
+
+def send_data(locations):
+    edge_controller_url = 'http://localhost:5002/receive_bus_data' 
+    data = {"locations": locations[0]['Location'], "vehicleid":vehicleid, "crowdflowid": crowdflowid, "busnumber": "601"}
 
     try:
-        await async_http_request(edge_controller_url, data)
-        print("Data sent successfully.")
+        response = requests.post(edge_controller_url, json=data)
+        response.raise_for_status()
+        print("Data sent successfully to context broker.")
     except requests.exceptions.RequestException as e:
-        print(f"Error sending data: {e}")
+        print(f"Error sending data to context broker: {e}")
 
-async def send_to_station_async(max_people, station_info):
+def send_to_station(max_people ,station_info):
     station_url = 'http://localhost:5001/receive_data'
-    data = {"vehicleid": vehicleid, "station_name": station_info[0][0]['Station'],
-            "station_location": station_info[1][0]["Station's Location"]}
+    data = {"vehicleid": vehicleid, "station_name": station_info[0][0]['Station'], "station_location": station_info[1][0]["Station's Location"]}
     print(data)
     try:
-        await async_http_request(station_url, data)
-        print("Data sent successfully.")
-    except requests.exceptions.RequestException as e:
-        print(f"Error sending data: {e}")
+        response = requests.post(station_url, json=data)
+        response.raise_for_status()
+        print("Data sent successfully to station.")
 
-    edge_controller_crowd_url = 'http://localhost:5002/receive_crowd_data'
+    except requests.exceptions.RequestException as e:
+        print(f"Error sending data to station: {e}")
+    
+    edge_controller_crowd_url = 'http://localhost:5002/receive_crowd_data' 
     crowdFlowSplitted = crowdflowid.split(':')
     idNumber = crowdFlowSplitted[-1]
     crowd_data = {'id': crowdflowid, 'value': max_people, 'dateObserved': datetime.datetime.now().isoformat(),
-                  'station': station_info[0][0]['Station'], 'entityName': f"Bus {idNumber}"}
+                   'station':station_info[0][0]['Station'], 'entityName': f"Bus {idNumber}"}
 
     try:
-        await async_http_request(edge_controller_crowd_url, crowd_data)
-        print("Data sent successfully.")
+        response = requests.post(edge_controller_crowd_url, json=crowd_data)
+        response.raise_for_status()
+        print("Data sent successfully to station.")
     except requests.exceptions.RequestException as e:
-        print(f"Error sending data: {e}")
+        print(f"Error sending data to station: {e}")
 
-async def read_locations(file_path, start_row=None, end_row=None, skip_value=None):
+def read_locations(file_path, start_row=None, end_row=None, skip_value=None):
     try:
         use_cols = [1]
         skiprows = range(1, start_row) if start_row else None
@@ -175,11 +181,12 @@ async def read_locations(file_path, start_row=None, end_row=None, skip_value=Non
             else:
                 return locations, False
         else:
-            if start_row + 1 < 123:
-                return await read_locations(
+            if start_row + 1<123:
+                #print("No valid locations found in row {}. Trying next row.".format(start_row))
+                return read_locations(
                     file_path=os.path.join(subfile, "Routes.xlsx"),
                     start_row=start_row + 1,
-                    end_row=end_row + 1,
+                    end_row=end_row+1,
                     skip_value="-"
                 )
             else:
@@ -188,8 +195,8 @@ async def read_locations(file_path, start_row=None, end_row=None, skip_value=Non
         print(f"Error reading locations from Excel: {e}")
         return [], False
 
-async def process_frame_async(frame: np.ndarray, _) -> np.ndarray:
-    global max_people
+def process_frame(frame: np.ndarray, _) -> np.ndarray:
+    global z_1, max, m
     results = model(frame, imgsz=1280, agnostic_nms = True, classes=[0])[0]
     detections = sv.Detections.from_yolov8(results)
     #detections = detections[detections.class_id == 0]
@@ -200,36 +207,51 @@ async def process_frame_async(frame: np.ndarray, _) -> np.ndarray:
     frame = box_annotator.annotate(scene=frame, detections=detections, labels=labels)
     frame = zone_annotator.annotate(scene=frame)
     z = zone.trigger(detections=detections)
+    if m==0:
+        max=sum(z)
+        m=1
+    if sum(z)>max:
+        max= sum(z)
+    if len(z_1) == len(z):
+        for i,k in enumerate(z_1):
+            if z[i]==False and z_1[i]==True:
+                max=max-1
+            if z[i]==True and z_1[i]==False:
+                max=max+1
 
-    if sum(z) > max_people:
-        max_people = sum(z)
+    print("Detections", max )
+    z_1= z
 
-    additional_info_text = f"People inside: {max_people}"
+    additional_info_text = f"People inside: {max}"
 
     cv2.putText(frame, additional_info_text, (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 6, cv2.LINE_AA)
 
-    return frame, max_people
+    #sv.show_frame_in_notebook(frame, (16, 16))
+    return frame, max
 
-async def faker_async(station, location):
+cap = cv2.VideoCapture(SUBWAY_VIDEO_PATH)
+
+if not cap.isOpened():
+    print("Error: Could not open video.")
+    exit()
+
+def faker(station, location):
     global max_people
     random_integer = random.randint(-30, 30)
 
-    if max_people + random_integer >= 0:
-        max_people += random_integer
+    if max_people + random_integer>=0:
+        max_people +=random_integer
     else:
-        max_people = 0
-
-    await send_data_async(location)
-    await send_to_station_async(int(max_people), station)
+        max_people=0
+    send_data(location)
+    send_to_station(int(max_people), station)
     print(max_people)
 
-async def start_video_async(station, location):
+def start_video(station, location):
     cap = cv2.VideoCapture(SUBWAY_VIDEO_PATH)
     global processing_video, max_people
     frame_counter = 0
-
-    await send_to_station_async(int(max_people), station)
-
+    send_to_station(int(max_people), station)
     if not cap.isOpened():
         print("Error: Could not open video.")
         return
@@ -244,35 +266,44 @@ async def start_video_async(station, location):
         frame_counter += 1
 
         if frame_counter % 20 == 0:
-            processed_frame, max_val = await process_frame_async(frame, None)
+            processed_frame, max = process_frame(frame, None)
+
             cv2.imshow("Video", processed_frame)
 
+            # Check if the user pressed 'q' to exit the loop
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
         if frame_counter == 20:
             frame_counter = 0
 
-    if max_people + max_val >= 0:
-        max_people += max_val
+    if max_people + max>=0:
+        max_people +=max
     else:
-        max_people = 0
+        max_people=0
 
-    await send_to_station_async(int(max_people), station)
-    await send_data_async(location)
+    send_to_station(int(max_people), station)
+    send_data(location)
 
     print(max_people)
 
     cap.release()
     cv2.destroyAllWindows()
 
-async def update_locations_async():
+def start_flask_app():
+    app.run(threaded=True, port=5000)
+
+# Start the Flask app on a different thread
+flask_thread = threading.Thread(target=start_flask_app)
+flask_thread.start()
+
+def update_locations():
     global row, processing_video, video_ended_event
     row = 1
 
     while True:
         excel_file_path = os.path.join(subfile, "Routes.xlsx")
-        result = await read_locations(
+        result = read_locations(
             file_path=excel_file_path,
             start_row=row,
             end_row=row,
@@ -281,55 +312,46 @@ async def update_locations_async():
 
         if result is not None:
             locations, station = result
-            await send_data_async(locations)
             print(locations)
-            t = 1
+            send_data(locations)
+            t=1
             if station:
-                t = 3
+                t=3
                 print("station[0]", station[0])
                 if station[0] == [{'Station': 'Ermou'}]:
                     print(station)
                     processing_video = True
 
                     # Start video processing thread
-                    video_thread = threading.Thread(target=await_start_video_async, args=(station, locations))
+                    video_thread = StoppableThread(target=start_video, args=(station, locations))
                     video_thread.start()
+                    video_thread.stop()
+                    # Wait for the video processing thread to finish
                     video_thread.join()
 
                     processing_video = False
                 elif station[0] == [{'Station': 'Favierou'}]:
-                    await faker_async(station, locations)
+                    faker(station, locations)
                     video_ended_event.wait()
-                    video_ended_event.clear()
+                    video_ended_event.clear() 
                 elif station[0] == [{'Station': 'Hospital'}]:
-                    await faker_async(station, locations)
+                    faker(station, locations)
                     row = 0
                 else:
-                    await faker_async(station, locations)
+                    faker(station, locations)
 
             row += 1
         else:
             print("Error reading locations. Stopping update.")
             break
-        await asyncio.sleep(t)
+        time.sleep(t)
 
-# Function to run start_video_async in the event loop
-def await_start_video_async(station, locations):
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(start_video_async(station, locations))
+# Start the location update thread
+locations_thread = threading.Thread(target=update_locations)
+locations_thread.start()
 
-async def main():
-    # Start the Flask app
-    from threading import Thread
-    Thread(target=app.run, kwargs={'port': 5000}).start()
+locations_thread.join() 
 
-    # Start the location update task
-    locations_task = asyncio.create_task(update_locations_async())
-
-    # Wait for both tasks to complete
-    await asyncio.gather(locations_task)
-
-# Run the asyncio event loop
-if __name__ == "__main__":
-    asyncio.run(main())
+# Release video capture and close all windows
+cap.release()
+cv2.destroyAllWindows()
