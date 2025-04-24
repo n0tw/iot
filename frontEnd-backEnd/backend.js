@@ -51,7 +51,6 @@ async function readexcel(){
       }
       
   }
-  console.log(parsedData);
   return parsedData;
 }
 
@@ -69,11 +68,9 @@ const readEntityAttribute = async (entityId, attributeName) => {
   try {
     const response = await axios.get(`http://150.140.186.118:1026/v2/entities/${entityId}`);
     
-    console.log('Full response:', response.data);
 
     if (response.data && response.data[attributeName]) {
       const attributeValue = response.data[attributeName].value;
-      /* console.log(`Attribute ${attributeName} value:`, attributeValue); */
       return attributeValue;
     } else {
       console.log(`Attribute ${attributeName} not found for entity ${entityId}`);
@@ -93,7 +90,6 @@ const readStationsLBinfo = async (entityId) => {
       cf = "urn:ngsild:CrowdFlowObserved:Bus:"+(l.value).slice(len, (l.value).length);
       const lb = await readEntityAttribute(cf, "alternateName");
 
-      //console.log("name", await readEntityAttribute((await readEntityAttribute(entityId, "crowdFlowObserved")).value, 'name'));
       return {
           dateTime: dT,
           lastbus: lb,
@@ -108,7 +104,6 @@ const readStationsLBinfo = async (entityId) => {
 app.get('/getStationsLB', async (req, res) => {
   try {
       const stationlasts = await readStationsLBinfo(req.query.id);
-      console.log(stationlasts);
       res.json(stationlasts);
   } catch (error) {
       console.error('Error:', error.message);
@@ -119,7 +114,6 @@ app.get('/getStationsLB', async (req, res) => {
 app.get('/getBusDirection', async (req, res) => {
   try {
       const laststation = await readEntityAttribute(req.query.id, 'name');
-      console.log(laststation);
       res.json(laststation);
   } catch (error) {
       console.error('Error:', error.message);
@@ -129,7 +123,6 @@ app.get('/getBusDirection', async (req, res) => {
 
 
 app.get('/getStationInfo', async (req, res) => {
-    console.log('GET /getStationInfo called');
     res.json(stationData);
 });
 
@@ -207,13 +200,12 @@ const updateStationData = async () => {
     try {
         for (let i = 1; i < 33; i++) {
             stations.push("urn:ngsild:TransportStation:Station:" + String(i));
-            console.log(await readEntityAttribute(stations[i - 1], 'crowdFlowObserved'));
+            console.log(await readEntityAttribute(stations[i - 1]));
         }
 
         await updateStationData();
 
         app.get('/getStationInfo', async (req, res) => {
-            console.log('GET /getStationInfo called');
             res.json(stationData);
         });
 
@@ -221,7 +213,6 @@ const updateStationData = async () => {
 
         for (let i = 1; i < 4; i++) {
             buses.push("urn:ngsild:Vehicle:Bus:" + String(i));
-            console.log(await readEntityAttribute(buses[i-1], "crowdFlowObserved"));
         }
         await updateBusData();
 
@@ -234,7 +225,6 @@ const updateStationData = async () => {
     }
 };
 fData();
-console.log("kkkkkk",buses);
 
   const PORT = 3000;
   server.listen(PORT, () => {
