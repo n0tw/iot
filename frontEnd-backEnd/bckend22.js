@@ -54,7 +54,6 @@ const readBusPCinfo = async (entityId) => {
         const lS = await readEntityAttribute((await readEntityAttribute(entityId, "crowdFlowObserved")).value, 'name');
         const dT = await readEntityAttribute((await readEntityAttribute(entityId, "crowdFlowObserved")).value, 'dateObserved');
         const pC = await readEntityAttribute((await readEntityAttribute(entityId, "crowdFlowObserved")).value, 'peopleCount');
-        console.log("name", await readEntityAttribute((await readEntityAttribute(entityId, "crowdFlowObserved")).value, 'name'));
         return {
             lastStation: lS,
             dateTime: dT,
@@ -75,7 +74,6 @@ const readStationsLBinfo = async (entityId) => {
         cf = "urn:ngsild:CrowdFlowObserved:Bus:"+(l.value).slice(len, (l.value).length);
         const lb = await readEntityAttribute(cf, "alternateName");
   
-        //console.log("name", await readEntityAttribute((await readEntityAttribute(entityId, "crowdFlowObserved")).value, 'name'));
         return {
             dateTime: dT,
             lastbus: lb,
@@ -90,7 +88,6 @@ const readStationsLBinfo = async (entityId) => {
 app.get('/getBusPC', async (req, res) => {
     try {
         const buslasts = await readBusPCinfo(req.query.id);
-        console.log(buslasts);
         res.json(buslasts);
     } catch (error) {
         console.error('Error:', error.message);
@@ -101,7 +98,6 @@ app.get('/getBusPC', async (req, res) => {
 app.get('/getStationsLB', async (req, res) => {
     try {
         const stationlasts = await readStationsLBinfo(req.query.id);
-        console.log(stationlasts);
         res.json(stationlasts);
     } catch (error) {
         console.error('Error:', error.message);
@@ -112,15 +108,11 @@ app.get('/getStationsLB', async (req, res) => {
 const readEntityAttribute = async (entityId, attributeName) => {
     try {
       const response = await axios.get(`http://150.140.186.118:1026/v2/entities/${entityId}`);
-      
-      //console.log('Full response:', response.data[attributeName]);
   
       if (response.data && response.data[attributeName]) {
         const attributeValue = response.data[attributeName].value;
-        /* console.log(`Attribute ${attributeName} value:`, attributeValue); */
         return attributeValue;
       } else {
-        console.log(`Attribute ${attributeName} not found for entity ${entityId}`);
         return null;
       }
     } catch (error) {
@@ -131,9 +123,6 @@ const readEntityAttribute = async (entityId, attributeName) => {
 const monitorAttribute = async (stationids) => {
     let text='';
     try {
-        console.log("opopop");
-        
-        //console.log(readEntityAttribute(await readEntityAttribute(stationids[0], 'trafficViolation')));
         await Promise.all(stationids.map(async (id) => {
             
             try {
@@ -143,11 +132,7 @@ const monitorAttribute = async (stationids) => {
 
                 text = text + `Illegal parking detected in ${transportStation.value} at ${observationDateTime.value['@value']}. The vehicle of interest has the following plate number: ${vehiclePlate}.\n\n`;
             } catch (attributeError) {
-                console.log(id);
-                console.log(await readEntityAttribute((await readEntityAttribute(id, "trafficViolation")).value, 'observationDateTime'), "+");
-
                 console.error(`Error fetching attributes for station ${id}:`, attributeError);
-                
             }
         }));
         
@@ -227,7 +212,6 @@ const updateStationData = async () => {
         const removeStations = stationData.filter(station => station.illparkingid.value === '_' && violations.includes(station.id));
         violations = violations.filter(e => !removeStations.map(station => station.id).includes(e));
         
-        console.log("pppppp");
         filteredStations.forEach(station => {
             violations.push(station.id);
         });
@@ -280,13 +264,12 @@ const fData = async () => {
     try {
         for (let i = 1; i < 33; i++) {
             stations.push("urn:ngsild:TransportStation:Station:" + String(i));
-            console.log(await readEntityAttribute(stations[i - 1], 'crowdFlowObserved'));
+            console.log(await readEntityAttribute(stations[i - 1]));
         }
 
         await updateStationData();
 
         app.get('/getStationInfo', async (req, res) => {
-            console.log('GET /getStationInfo called');
             res.json(stationData);
         });
 
@@ -294,7 +277,7 @@ const fData = async () => {
 
         for (let i = 1; i < 4; i++) {
             buses.push("urn:ngsild:Vehicle:Bus:" + String(i));
-            console.log(await readEntityAttribute(buses[i-1], "crowdFlowObserved"));
+            console.log(await readEntityAttribute(buses[i-1]));
         }
         await updateBusData();
 
@@ -323,19 +306,11 @@ server.listen(PORT, () => {
       
 const readDataByTime = async(req, res, entityId, initYear, initMonth, initDay, initHour, initMinute, initSecond,
     endYear, endMonth, endDay, endHour, endMinute, endSecond, tz_offset) => {
-    console.log(`http://localhost:5003/entities_by_time/${entityId}/${Number(initYear)}/${Number(initMonth)}/${Number(initDay)}/${Number(initHour)}/${initMinute}/${initSecond}/${Number(endYear)}/${Number(endMonth)}/${Number(endDay)}/${Number(endHour)}/${endMinute}/${endSecond}/${tz_offset}`, typeof(entityId), typeof(endYear), typeof(initMinute));
     try {
         const response = await axios.get(`http://localhost:5003/entities_by_time/${entityId}/${initYear}/${initMonth}/${initDay}/${initHour}/${initMinute}/${initSecond}/${endYear}/${endMonth}/${endDay}/${endHour}/${endMinute}/${endSecond}/${tz_offset}`);
 
         const responseData = response.data;
-    
-        console.log('Type of responseData:', typeof responseData);
-        console.log('Content of responseData:', responseData);
-    
         const data = responseData.data;
-    
-        console.log('Type of data:', typeof data);
-        console.log('Content of data:', data);
     
         const allEntries = Object.entries(data)
     
@@ -358,17 +333,9 @@ const readDataAvgPeopleByTime = async(req, res, entityId, initYear, initMonth, i
   
       const data2 = responseData2.data;
   
-      console.log('Type of data2:', typeof data2);
-      console.log('Content of data2:', data2);
-  
       const entries2 = Object.entries(data2);
       const xValues2 = entries2.map(([label, value]) => label);
       const yValues2 = entries2.map(([label, value]) => value);
-  
-      console.log('Type of xValues2:', typeof xValues2);
-      console.log('Content of xValues2:', xValues2);
-      console.log('Type of yValues2:', typeof yValues2);
-      console.log('Content of yValues2:', yValues2);
   
       res.json({ xValues2, yValues2 });
     } catch (error) {
